@@ -29,17 +29,15 @@ class OrderStatus(models.Model):
     class Meta:
         db_table = 'order_statuses'
 
-
 class OrderItemStatus(models.Model):
     status =  models.CharField(max_length=20)
 
     class Meta:
         db_table = 'order_item_statuses'
 
-
 class CartItem(models.Model):
-    user     = models.ForeignKey('users.User', on_delete=models.CASCADE) 
-    quantity = models.IntegerField()
+    user            = models.ForeignKey('users.User', on_delete=models.CASCADE) 
+    quantity        = models.IntegerField()
     product_options = models.ForeignKey('products.ProductOption', on_delete=models.CASCADE) 
     
     class Meta:
