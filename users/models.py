@@ -1,10 +1,10 @@
 from django.db import models
 
 class User(models.Model):
-    email        = models.CharField(max_length=100)
+    email        = models.CharField(max_length=100, unique=True)
     password     = models.CharField(max_length=200)
     name         = models.CharField(max_length=30)
-    phone_number = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20, unique=True)
     point        = models.IntegerField(default=0)
     coupons      = models.ManyToManyField('Coupon', through='UserCoupon')
 
