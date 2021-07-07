@@ -1,24 +1,24 @@
 from django.db import models
 
 class Order(models.Model):
-    user          = models.ForeignKey('users.User', on_delete=models.CASCADE) 
+    user          = models.ForeignKey('users.User', on_delete=models.SET_NULL,null=True) 
     delivery_date = models.DateField()
     recipient     = models.CharField(max_length=30)
     phone_number  = models.CharField(max_length=30)
     address       = models.CharField(max_length=300)
     point         = models.IntegerField()
     delivery_fee  = models.DecimalField(max_digits=10, decimal_places=2)
-    coupon        = models.ForeignKey('users.Coupon', on_delete=models.CASCADE, null=True)
-    status        = models.ForeignKey('OrderStatus', on_delete=models.CASCADE)
+    coupon        = models.ForeignKey('users.Coupon', on_delete=models.SET_NULL, null=True)
+    status        = models.ForeignKey('OrderStatus', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'orders'
 
 class OrderItem(models.Model):
     order    = models.ForeignKey(Order, on_delete=models.CASCADE) 
-    product  = models.ForeignKey('products.Product', on_delete=models.CASCADE) 
+    product  = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True) 
     quantity = models.IntegerField()
-    status   = models.ForeignKey('OrderItemStatus', on_delete=models.CASCADE) 
+    status   = models.ForeignKey('OrderItemStatus', on_delete=models.SET_NULL, null=True) 
 
     class Meta:
         db_table = 'order_items' 
