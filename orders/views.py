@@ -2,7 +2,6 @@ from django.views         import View
 from django.http.response import JsonResponse
 
 from users.models    import User
-from products.models import Product
 from orders.models   import CartItem
 
 class CartView(View):
@@ -11,26 +10,17 @@ class CartView(View):
         try:
             signed_user = request.user
             items       = CartItem.objects.filter(user=signed_user)
-            cart_lists  = []
-            if not items:
-                return JsonResponse({'cartItems':cart_lists}, status=200)
-
-            for item in items:
-
-                if not Product.objects.filter(pk=item.product_options.product_id):
-                    continue
-
-                product = item.product_options.product
-                cart_lists.append(
+            cart_lists  = [
                     {
-                    'thumbnail': product.thumbnail,
-                    'name'     : product.name,
+                    'thumbnail': item.product_options.product.thumbnail,
+                    'name'     : item.product_options.product.name,
                     'option'   : item.product_options.option.name,
-                    'price'    : product.price,
-                    'grams'    : product.grams,
+                    'price'    : item.product_options.product.price,
+                    'grams'    : item.product_options.product.grams,
                     'quantity' : item.quantity
                     }
-                )
+                for item in items
+            ]
             return JsonResponse({'cartItems':cart_lists}, status=200)
         
         except KeyError:
