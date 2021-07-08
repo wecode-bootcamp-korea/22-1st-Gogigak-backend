@@ -4,7 +4,6 @@ from json.decoder import JSONDecodeError
 
 from django.views import View
 from django.http  import JsonResponse
-from django.db    import IntegrityError 
 
 from users.models import User
 
@@ -20,15 +19,19 @@ class SignUpView(View):
 
             if not REGEX_EMAIL.match(data["email"]):
                 return JsonResponse({"message" : "INVALID_EMAIL_FORMAT"} , status = 400) 
+
             if not REGEX_PASSWORD.match(data["password"]):
                 return JsonResponse({"message" : "INVALID_PASSWORD_FORMAT"} , status = 400)
+            
             if not REGEX_PHONE_NUMBER.match(data["phone_number"]):
-                return JsonResponse({"message": "INVALID_EMAIL_FORMAT"} , status = 400)
+                return JsonResponse({"message": "INVALID_PHONE_NUMBER_FORMAT"} , status = 400)
+            
             if not REGEX_NAME.match(data["name"]):
                 return JsonResponse({"message" : "INVALID_NAME_FORMAT"} , status = 400) 
             
             if User.objects.filter(email=data["email"]).exists():
                 return JsonResponse( {"message": "EMAIL_EXISTS"} , status = 400)
+
             if User.objects.filter(phone_number=data["phone_number"]).exists():
                 return JsonResponse( {"message": "PHONE_NUMBER_EXISTS"} , status = 400)
             
@@ -42,7 +45,6 @@ class SignUpView(View):
         
         except KeyError:
             return JsonResponse({"message": "KeyError"} , status = 400)
-        except IntegrityError:
-            return JsonResponse({"message": "IntegrityError"} , status = 400)
+        
         except JSONDecodeError:
             return JsonResponse({"message": "JSON_DECODE_ERROR"} , status = 400)
