@@ -1,14 +1,18 @@
 import json
 import re
 from json.decoder import JSONDecodeError
+import bcrypt
+import jwt
 
 from django.views import View
 from django.http  import JsonResponse
 
 from users.models import User
+from my_settings  import SECRET_KEY
 
 class SignUpView(View):
     def post(self,request):
+
         try:
             data = json.loads(request.body)
 
@@ -34,10 +38,12 @@ class SignUpView(View):
 
             if User.objects.filter(phone_number=data["phone_number"]).exists():
                 return JsonResponse( {"message": "PHONE_NUMBER_EXISTS"} , status = 400)
+
+            hashed_password = bcrypt.hashpw(data["password"].encode("utf-8"),bcrypt.gensalt())
             
             User.objects.create(
                 email        = data["email"],
-                password     = data["password"],
+                password     = hashed_password.decode("utf-8"),
                 name         = data["name"],
                 phone_number = data["phone_number"],
                 )
@@ -48,3 +54,24 @@ class SignUpView(View):
         
         except JSONDecodeError:
             return JsonResponse({"message": "JSON_DECODE_ERROR"} , status = 400)
+
+class SignInView(View):
+    def post(self,request):
+
+        try:
+            data = json.loads(request.body)
+
+            user            = User.objects.get(email = data['email'])
+            hashed_password = user.password.encode("utf-8") 
+            
+            if bcrypt.checkpw(data["password"].encode("utf-8"), hashed_password):
+                token = jwt.encode({"user_id" : user.id}, SECRET_KEY, algorithm="HS256")
+                return JsonResponse( {"message": "SUCCESS", "token": token} , status = 201)
+
+            return JsonResponse({"message" : "INVALID_USER"}, status = 401) 
+
+        except KeyError: 
+            return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
+        
+        except User.DoesNotExist:
+            return JsonResponse({"message" : "INVALID_USER"}, status = 401)
