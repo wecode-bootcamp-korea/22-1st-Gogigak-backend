@@ -18,7 +18,8 @@ class Product(models.Model):
     reviews        = models.IntegerField()
     thumbnail      = models.CharField(max_length=2000)
     options        = models.ManyToManyField('Option', through='ProductOption')
-
+    is_in_stock    = models.BooleanField(default=True)
+    
     class Meta:
         db_table = 'products'
 
