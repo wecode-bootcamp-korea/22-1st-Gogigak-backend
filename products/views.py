@@ -1,15 +1,26 @@
 import json
 
-from django.http.response import JsonResponse
 from django.views import View
+from django.http.response import JsonResponse
+from django.utils.datastructures import MultiValueDictKeyError
 
 from products.models import Category, Product
 
 class ListingView(View):
     def get(self, request):
-        category = Category.objects.get(name=request.GET['category'])
-        products = Product.objects.filter(category=category.id)
+        try:
+            if request.GET:
+                category = Category.objects.get(name=request.GET['category'])
+                products = Product.objects.filter(category=category.id)
+            else:
+                products = Product.objects.all()
 
+        except MultiValueDictKeyError:
+            return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
+        except Category.DoesNotExist:
+            return JsonResponse({'message': 'CATEGORY_DOES_NOT_EXIST'}, status=400)
+        
         results = []
         for product in products:
             results.append({
@@ -21,5 +32,6 @@ class ListingView(View):
             })
 
         return JsonResponse({'results': results}, status=200)
+
         
 ## 판매수 리뷰수 parameter 어떻게 들어가는지 확인(ListingView에 추가할지 새로만들지)

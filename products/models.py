@@ -18,7 +18,8 @@ class Product(models.Model):
     reviews        = models.IntegerField()
     thumbnail      = models.CharField(max_length=2000)
     options        = models.ManyToManyField('Option', through='ProductOption')
-
+    stock          = models.IntegerField(default=999)
+    
     class Meta:
         db_table = 'products'
 
