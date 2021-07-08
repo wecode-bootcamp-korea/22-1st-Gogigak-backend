@@ -13,7 +13,8 @@ class ListingView(View):
                 category = Category.objects.get(name=request.GET['category'])
                 products = Product.objects.filter(category=category.id)
                 
-            if request.GET['category'] == '전체':
+            if request.GET['category'] == 'all':
+                category = Category.objects.get(name='all')
                 products = Product.objects.all()
 
         except MultiValueDictKeyError:
@@ -22,15 +23,19 @@ class ListingView(View):
         except Category.DoesNotExist:
             return JsonResponse({'message': 'CATEGORY_DOES_NOT_EXIST'}, status=400)
         
-        results = []
+        results = [{'category_image': category.image}]
+
         for product in products:
             results.append({
-                'name': product.name,
-                'price': int(product.price),
-                'grams': int(product.grams),
+                'id'       : product.id,
+                'name'     : product.name, 
+                'price'    : int(product.price),
+                'grams'    : int(product.grams),
                 'thumbnail': product.thumbnail,
-                'isOrganic': product.is_organic
+                'isOrganic': product.is_organic,
             })
+
+        print(results[0]['category_image'])
 
         return JsonResponse({'results': results}, status=200)
 
