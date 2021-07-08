@@ -7,14 +7,19 @@ from orders.models   import CartItem
 
 class CartView(View):
     def get(self, request):
+        @login_decorator
         try:
-            user       = User.objects.get(pk=request.GET.get('user_id'))
-            items      = CartItem.objects.filter(user=user)
-            cart_lists = []
+            signed_user = request.user
+            items       = CartItem.objects.filter(user=signed_user)
+            cart_lists  = []
             if not items:
-                return JsonResponse({'MESSAGE':'NO_ITEMS_IN_CART'}, status=200)
-            
+                return JsonResponse({'cartItems':cart_lists}, status=200)
+
             for item in items:
+
+                if not Product.objects.filter(pk=item.product_options.product_id):
+                    continue
+
                 product = item.product_options.product
                 cart_lists.append(
                     {
@@ -26,13 +31,10 @@ class CartView(View):
                     'quantity' : item.quantity
                     }
                 )
-            return JsonResponse({'CART_ITEMS':cart_lists}, status=200)
+            return JsonResponse({'cartItems':cart_lists}, status=200)
         
         except KeyError:
-            return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
         
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':'INVALID_USER'}, status=400)
-
-        except Product.DoesNotExist:
-            return JsonResponse({'MESSAGE':'INVALID_PRODUCT'}, status=400)
+            return JsonResponse({'message':'INVALID_USER'}, status=400)
