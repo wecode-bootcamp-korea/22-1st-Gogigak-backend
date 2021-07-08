@@ -6,8 +6,8 @@ from products.models import Product
 from orders.models   import CartItem
 
 class CartView(View):
+    @login_decorator
     def get(self, request):
-        @login_decorator
         try:
             signed_user = request.user
             items       = CartItem.objects.filter(user=signed_user)
