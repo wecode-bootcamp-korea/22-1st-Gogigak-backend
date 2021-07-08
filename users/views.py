@@ -1,8 +1,8 @@
 import json
 import re
-from json.decoder import JSONDecodeError
 import bcrypt
 import jwt
+from json.decoder import JSONDecodeError
 
 from django.views import View
 from django.http  import JsonResponse
@@ -12,7 +12,6 @@ from my_settings  import SECRET_KEY
 
 class SignUpView(View):
     def post(self,request):
-
         try:
             data = json.loads(request.body)
 
@@ -57,9 +56,11 @@ class SignUpView(View):
 
 class SignInView(View):
     def post(self,request):
-
         try:
             data = json.loads(request.body)
+
+            if not User.objects.filter(email=data["email"]).exists():
+                return JsonResponse({"message" : "INVALID_USER"}, status = 401)
 
             user            = User.objects.get(email = data['email'])
             hashed_password = user.password.encode("utf-8") 
@@ -69,9 +70,6 @@ class SignInView(View):
                 return JsonResponse( {"message": "SUCCESS", "token": token} , status = 201)
 
             return JsonResponse({"message" : "INVALID_USER"}, status = 401) 
-
+        
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
-        
-        except User.DoesNotExist:
-            return JsonResponse({"message" : "INVALID_USER"}, status = 401)
