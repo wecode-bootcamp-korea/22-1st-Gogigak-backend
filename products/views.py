@@ -12,7 +12,8 @@ class ListingView(View):
             if request.GET:
                 category = Category.objects.get(name=request.GET['category'])
                 products = Product.objects.filter(category=category.id)
-            else:
+                
+            if request.GET['category'] == '전체':
                 products = Product.objects.all()
 
         except MultiValueDictKeyError:
@@ -25,8 +26,8 @@ class ListingView(View):
         for product in products:
             results.append({
                 'name': product.name,
-                'price': product.price,
-                'grams': product.grams,
+                'price': int(product.price),
+                'grams': int(product.grams),
                 'thumbnail': product.thumbnail,
                 'isOrganic': product.is_organic
             })
