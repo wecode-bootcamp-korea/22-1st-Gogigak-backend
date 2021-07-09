@@ -1,11 +1,8 @@
-import json
-
-from django.views import View
-from django.http.response import JsonResponse
+from django.views                import View
+from django.http.response        import JsonResponse
 from django.utils.datastructures import MultiValueDictKeyError
 
-# from users.models import User
-from products.models import Category, Product
+from products.models             import Category, Product
 
 class ListingView(View):
     def get(self, request):
@@ -53,10 +50,3 @@ class ListingView(View):
             })
 
         return JsonResponse({'results': results}, status=200)
-
-        
-## 판매수 리뷰수 parameter 어떻게 들어가는지 확인(ListingView에 추가할지 새로만들지)
-
-# # @데코레이터
-# def delete(self, request):
-#     user = User.objects.get(id=1)
