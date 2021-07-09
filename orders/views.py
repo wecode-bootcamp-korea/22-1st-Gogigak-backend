@@ -42,16 +42,17 @@ class CartView(View):
             if not Product.objects.filter(pk=data['productId']).exists():
                 return JsonResponse({'message':'INVALID_PRODUCT'}, status=400)
 
-            product = Product.objects.get(pk=data['productId'])
-            
             if not Option.objects.filter(pk=data['optionId']).exists():
                 return JsonResponse({'message':'INVALID_OPTION'}, status=400)
 
-            option = Option.objects.get(pk=data['optionId'])
-            
-            if not ProductOption.objects.filter(product=product, option=option).exists():
+            if not ProductOption.objects.filter(
+                product_id = data['productId'],
+                option     = data['optionId']
+                ).exists():
                 return JsonResponse({'message':"INVALID_PRODUCTS_OPTION"}, status=400)
             
+            product        = Product.objects.get(pk=data['productId'])
+            option         = Option.objects.get(pk=data['optionId'])
             product_option = ProductOption.objects.get(product=product, option=option)
 
             if quantity < 1:
