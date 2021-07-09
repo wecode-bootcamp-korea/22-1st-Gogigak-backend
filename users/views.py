@@ -75,19 +75,23 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
 
-#mypage
 class MyPageView(View):
+    @login_decorator
     def get(self,request):
+        try: 
+            user    = request.user
+            coupons = user.coupons.all()
+            orders  =  user.order_set.all()
 
-        user = User.objects.get(id=1) #데코레이터,, 넣고 수정,,
-        coupons = user.coupons.all()
+            results = {
+                    "name"         : user.name,
+                    "point"        : user.point,
+                    "coupon"       : user.coupons.all().count(),
+                    "userNumber"   : user.id,
+                    "orderCount"   : user.order_set.all().count(),
+                    }
 
-        results = {
-                "name"         : user.name,
-                "point"        : user.point,
-                "coupon"       : [coupon.name for coupon in coupons],
-                "userNumber"   : user.id,
-                "orderCount"   : user.order_set.all().count()
-            }
+            return JsonResponse({"results": results} , status=200)
 
-        return JsonResponse({"results": results} , status=200)
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
