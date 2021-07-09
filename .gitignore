@@ -1,3 +1,5 @@
+**/.vscode/
+csv_to_mysql.py
 my_settings.py
 *.csv
 
