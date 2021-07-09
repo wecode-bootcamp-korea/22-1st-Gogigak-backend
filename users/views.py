@@ -54,25 +54,6 @@ class SignUpView(View):
         except JSONDecodeError:
             return JsonResponse({"message": "JSON_DECODE_ERROR"} , status = 400)
 
-#mypage
-class MyPageView(View):
-    def post(self,request):
-        data = json.loads(request.body)
-        
-    
-        user = User.objects.get(id= data["id"])
-        coupons = user.coupons.all()
-        # for coupon in coupons:
-        results = {
-                "name"         : user.name,
-                "point"        : user.point,
-                "coupon"       : [coupon.name for coupon in coupons],
-                "userNumber"   : user.id,
-                "orderCount"   : user.order_set.all().count()
-            }
-        
-        return JsonResponse({"results": results} , status=200)
-
 class SignInView(View):
     def post(self,request):
         try:
@@ -92,3 +73,21 @@ class SignInView(View):
         
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
+
+
+#mypage
+class MyPageView(View):
+    def get(self,request):
+
+        user = User.objects.get(id=1) #데코레이터,, 넣고 수정,,
+        coupons = user.coupons.all()
+
+        results = {
+                "name"         : user.name,
+                "point"        : user.point,
+                "coupon"       : [coupon.name for coupon in coupons],
+                "userNumber"   : user.id,
+                "orderCount"   : user.order_set.all().count()
+            }
+
+        return JsonResponse({"results": results} , status=200)
