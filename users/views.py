@@ -76,7 +76,7 @@ class SignInView(View):
 
 
 class MyPageView(View):
-    @login_decorator
+    # @login_decorator
     def get(self,request):
         try: 
             user    = request.user
