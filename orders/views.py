@@ -19,8 +19,7 @@ class CartView(View):
                     'price'     : item.product_options.product.price,
                     'grams'     : item.product_options.product.grams,
                     'quantity'  : item.quantity
-                    }
-                for item in items
+                    } for item in items
             ]
             return JsonResponse({'cartItems':cart_lists}, status=200)
         
