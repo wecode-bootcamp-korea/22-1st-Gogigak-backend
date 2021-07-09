@@ -15,14 +15,14 @@ class CartView(View):
             items       = CartItem.objects.filter(user=signed_user)
             cart_lists  = [
                     {
-                    'thumbnail': item.product_options.product.thumbnail,
-                    'name'     : item.product_options.product.name,
-                    'option'   : item.product_options.option.name,
-                    'price'    : item.product_options.product.price,
-                    'grams'    : item.product_options.product.grams,
-                    'quantity' : item.quantity
-                    }
-                for item in items
+                    'cartItemId': item.id,
+                    'thumbnail' : item.product_options.product.thumbnail,
+                    'name'      : item.product_options.product.name,
+                    'option'    : item.product_options.option.name,
+                    'price'     : item.product_options.product.price,
+                    'grams'     : item.product_options.product.grams,
+                    'quantity'  : item.quantity
+                    } for item in items
             ]
             return JsonResponse({'cartItems':cart_lists}, status=200)
         
