@@ -80,9 +80,6 @@ class MyPageView(View):
     def get(self,request):
         try: 
             user    = request.user
-            coupons = user.coupons.all()
-            orders  =  user.order_set.all()
-
             results = {
                     "name"         : user.name,
                     "point"        : user.point,
