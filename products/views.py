@@ -4,6 +4,7 @@ from django.views import View
 from django.http.response import JsonResponse
 from django.utils.datastructures import MultiValueDictKeyError
 
+# from users.models import User
 from products.models import Category, Product
 
 class ListingView(View):
@@ -23,21 +24,39 @@ class ListingView(View):
         except Category.DoesNotExist:
             return JsonResponse({'message': 'CATEGORY_DOES_NOT_EXIST'}, status=400)
         
-        results = [{'category_image': category.image}]
+        try:
+            if request.GET['sort']:
+                if request.GET['sort'] == 'sales':
+                    products = products.order_by('-sales')
+                if request.GET['sort'] == 'reviews':
+                    products = products.order_by('-reviews')
+                if request.GET['sort'] == 'price-desc':
+                    products = products.order_by('-price')
+                if request.GET['sort'] == 'price-asc':
+                    products = products.order_by('price')
+        
+        except MultiValueDictKeyError:
+            products = products
+
+        results = [{'category_image': category.image},[]]
 
         for product in products:
-            results.append({
+            results[1].append({
                 'id'       : product.id,
                 'name'     : product.name, 
                 'price'    : int(product.price),
                 'grams'    : int(product.grams),
                 'thumbnail': product.thumbnail,
                 'isOrganic': product.is_organic,
+                'sales'    : product.sales,
+                'reviews'  : product.reviews
             })
-
-        print(results[0]['category_image'])
 
         return JsonResponse({'results': results}, status=200)
 
         
 ## 판매수 리뷰수 parameter 어떻게 들어가는지 확인(ListingView에 추가할지 새로만들지)
+
+# # @데코레이터
+# def delete(self, request):
+#     user = User.objects.get(id=1)
