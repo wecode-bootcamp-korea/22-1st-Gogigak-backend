@@ -36,7 +36,8 @@ class CategoryImageView(View):
         for category in categories:
             results.append(
                 {
-                    'name': category.name,
+                    'id'   : category.id,
+                    'name' : category.name,
                     'image': category.image
                 }
             )
