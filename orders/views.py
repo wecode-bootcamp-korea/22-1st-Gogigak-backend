@@ -1,7 +1,9 @@
+import json
+
 from django.views         import View
 from django.http.response import JsonResponse
 
-from users.models    import User
+from users.models    import User, Product
 from orders.models   import CartItem
 
 class CartView(View):
@@ -28,3 +30,16 @@ class CartView(View):
         
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=400)
+
+    @login_decorator
+    def patch(self, request, cart_item):
+        try:
+            data = json.loads(request.body)
+            signed_user = request.user
+            is_add = data['isAdd']
+            if not CartItem.objects.filter(pk=cart_item, user=signed_user).exists():
+                return JsonResponse({'message':'INVALID_ITEM'}, status=400)
+            
+            item = CartItem.objects.get(pk=cart_item)
+            if is_add:
+                
