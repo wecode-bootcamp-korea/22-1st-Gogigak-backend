@@ -31,39 +31,35 @@ class ProductView(View):
 
 class ListingView(View):
     def get(self, request):
+
+        sort = {
+            'sales': '-sales',
+            'reviews': '-reviews',
+            'price-desc': '-price',
+            'price-asc': 'price'
+        }
+        
         try:
-            if request.GET:
-                category = Category.objects.get(name=request.GET['category'])
-                products = Product.objects.filter(category=category.id)
-                
+            category = Category.objects.get(name=request.GET.get('category', ''))
+            products = Product.objects.filter(category=category.id)
+        
             if request.GET['category'] == 'all':
                 category = Category.objects.get(name='all')
                 products = Product.objects.all()
+ 
+            if request.GET.get('sort', ''):
+                products = products.order_by(sort[request.GET.get('sort', '')])
 
-        except MultiValueDictKeyError:
-            return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         except Category.DoesNotExist:
             return JsonResponse({'message': 'CATEGORY_DOES_NOT_EXIST'}, status=400)
-        
-        try:
-            if request.GET['sort']:
-                if request.GET['sort'] == 'sales':
-                    products = products.order_by('-sales')
-                if request.GET['sort'] == 'reviews':
-                    products = products.order_by('-reviews')
-                if request.GET['sort'] == 'price-desc':
-                    products = products.order_by('-price')
-                if request.GET['sort'] == 'price-asc':
-                    products = products.order_by('price')
-        
-        except MultiValueDictKeyError:
-            products = products
 
-        results = [{'category_image': category.image},[]]
-
-        for product in products:
-            results[1].append({
+        results = {
+            'category_image': category.image,
+            'items': [
+                {
                 'id'       : product.id,
                 'name'     : product.name, 
                 'price'    : int(product.price),
@@ -71,7 +67,10 @@ class ListingView(View):
                 'thumbnail': product.thumbnail,
                 'isOrganic': product.is_organic,
                 'sales'    : product.sales,
-                'reviews'  : product.reviews
-            })
+                'reviews'  : product.reviews,
+                'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()]
+                } for product in products
+            ]
+            }
 
         return JsonResponse({'results': results}, status=200)
