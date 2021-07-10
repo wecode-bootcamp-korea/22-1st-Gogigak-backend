@@ -74,7 +74,7 @@ class SignInView(View):
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
-class MyPageView(View):
+class UserView(View):
     @login_decorator
     def get(self,request):
         try: 
