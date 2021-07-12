@@ -61,21 +61,20 @@ class CartView(View):
             if quantity > product.stock:
                 return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
 
-            if CartItem.objects.filter(user = signed_user, product_options = product_option):
-                cart_item = CartItem.objects.get(user = signed_user, product_options = product_option)
-
+            cart_item, is_created = CartItem.objects.get_or_create(
+                user            = signed_user,
+                product_options = product_option,
+                defaults        = {'quantity': quantity}
+                )
+            
+            if not is_created:
                 if (cart_item.quantity + quantity) > product.stock:
                     return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
                 
                 cart_item.quantity += quantity
                 cart_item.save()
                 return JsonResponse({'message':'SUCCESS'}, status=201)
-            
-            CartItem.objects.create(
-                user            = signed_user,
-                product_options = product_option,
-                quantity        = quantity
-            )
+
             return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except KeyError:
