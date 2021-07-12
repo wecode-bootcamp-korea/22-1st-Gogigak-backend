@@ -51,7 +51,7 @@ class ListingView(View):
                 products = products.order_by(sort[request.GET.get('sort', '')])
 
         except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            products = products
 
         except Category.DoesNotExist:
             return JsonResponse({'message': 'CATEGORY_DOES_NOT_EXIST'}, status=400)
@@ -69,8 +69,7 @@ class ListingView(View):
                 'sales'    : product.sales,
                 'reviews'  : product.reviews,
                 'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()]
-                } for product in products
-            ]
+                } for product in products]
             }
 
         return JsonResponse({'results': results}, status=200)
