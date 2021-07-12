@@ -38,43 +38,39 @@ class CartView(View):
             data           = json.loads(request.body)
             signed_user    = request.user
             quantity       = data['quantity']
+            product_id     = data['productId']
+            option_id      = data['optionId']
             
+            if quantity < 1:
+                return JsonResponse({'message':'INVALID_QUANTITY'}, status=400)
+
             if not Product.objects.filter(pk=data['productId']).exists():
                 return JsonResponse({'message':'INVALID_PRODUCT'}, status=400)
 
             if not Option.objects.filter(pk=data['optionId']).exists():
                 return JsonResponse({'message':'INVALID_OPTION'}, status=400)
 
-            if not ProductOption.objects.filter(
-                product_id = data['productId'],
-                option     = data['optionId']
-                ).exists():
+            if not ProductOption.objects.filter(product_id=product_id, option_id=option_id).exists():
                 return JsonResponse({'message':"INVALID_PRODUCTS_OPTION"}, status=400)
             
-            product        = Product.objects.get(pk=data['productId'])
-            option         = Option.objects.get(pk=data['optionId'])
-            product_option = ProductOption.objects.get(product=product, option=option)
+            product_option = ProductOption.objects.get(product=product_id, option=option_id)
 
-            if quantity < 1:
-                return JsonResponse({'message':'INVALID_QUANTITY'}, status=400)
-
-            if quantity > product.stock:
+            if quantity > product_option.product.stock:
                 return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
 
             cart_item, is_created = CartItem.objects.get_or_create(
                 user            = signed_user,
                 product_options = product_option,
                 defaults        = {'quantity': quantity}
-                )
+            )
             
             if not is_created:
-                if (cart_item.quantity + quantity) > product.stock:
-                    return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
-                
                 cart_item.quantity += quantity
-                cart_item.save()
-                return JsonResponse({'message':'SUCCESS'}, status=201)
 
+            if cart_item.quantity > product_option.product.stock:
+                return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
+                
+            cart_item.save()
             return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except KeyError:
