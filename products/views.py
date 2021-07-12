@@ -32,17 +32,13 @@ class CategoryImageView(View):
     def get(self, request):
         categories = Category.objects.all()
         results = []
-
-        for category in categories:
-            results.append(
-                {
-                    'id'   : category.id,
-                    'name' : category.name,
-                    'image': category.image
-                }
-            )
+        
+        results.append(
+            {
+                'id'   : category.id,
+                'name' : category.name,
+                'image': category.image
+            } for category in categories
+        )
         
         return JsonResponse({'results': results}, status=200)
-
-
-
