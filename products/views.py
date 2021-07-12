@@ -54,14 +54,13 @@ class ReviewView(View):
 
             Review.objects.create(
                 user      = signed_user,
-                product   = product,
+                product   = product[0],
                 image_url = data['imageUrl'],
                 title     = data['title'],
                 content   = data['content']
             )
 
-            product.reviews += 1
-            product.save()
+            product.update(reviews=product[0].reviews + 1)
 
             return JsonResponse({'message': 'SUCCESS'}, status=201)
 
