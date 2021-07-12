@@ -73,3 +73,21 @@ class SignInView(View):
         
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
+
+class UserView(View):
+    @login_decorator
+    def get(self,request):
+        try: 
+            user    = request.user
+            results = {
+                    "name"         : user.name,
+                    "point"        : user.point,
+                    "coupon"       : user.coupons.all().count(),
+                    "userNumber"   : user.id,
+                    "orderCount"   : user.order_set.all().count(),
+                    }
+
+            return JsonResponse({"results": results} , status=200)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
