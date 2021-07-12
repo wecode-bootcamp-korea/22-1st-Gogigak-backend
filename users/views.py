@@ -45,6 +45,7 @@ class SignUpView(View):
                 password     = hashed_password.decode("utf-8"),
                 name         = data["name"],
                 phone_number = data["phone_number"],
+                address      = data["address"]
                 )
             return JsonResponse( {"message": "SUCCESS"} , status = 201)
         
