@@ -32,7 +32,7 @@ class CartView(View):
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=400)
     
-    @login_decorator
+    # @login_decorator
     def post(self, request):
         try:
             data           = json.loads(request.body)
