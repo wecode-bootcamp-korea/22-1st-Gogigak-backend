@@ -7,13 +7,13 @@ class User(models.Model):
     phone_number = models.CharField(max_length=20, unique=True)
     point        = models.IntegerField(default=0)
     coupons      = models.ManyToManyField('Coupon', through='UserCoupon')
+    address      = models.CharField(max_length=300) 
+    zip_code     = models.CharField(max_length=20)
 
     class Meta:
         db_table = "users"
 
 class Address(models.Model):
-    user         = models.ForeignKey(User, on_delete=models.CASCADE)
-    road_address = models.CharField(max_length=200)
     zip_code     = models.CharField(max_length=20)
 
     class Meta:
