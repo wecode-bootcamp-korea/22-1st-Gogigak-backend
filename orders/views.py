@@ -11,7 +11,7 @@ class CartView(View):
     # @login_decorator
     def get(self, request):
         try:
-            signed_user = User.objects.get(pk=1)
+            signed_user = request.user
             items       = CartItem.objects.filter(user=signed_user)
             cart_lists  = [
                     {
