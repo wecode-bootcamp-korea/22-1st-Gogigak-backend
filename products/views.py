@@ -1,7 +1,20 @@
-from django.http.response import JsonResponse
-from django.views import View
+import json
 
-from products.models import Category, Product
+from django.views         import View
+from django.http.response import JsonResponse
+
+from users.models         import User
+from products.models      import Category, Product, Review
+
+class CategoryImageView(View):
+    def get(self, request):
+        results = [{
+                'id'   : category.id,
+                'name' : category.name,
+                'image': category.image
+            } for category in Category.objects.all()]
+        
+        return JsonResponse({'results': results}, status=200)
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -28,12 +41,32 @@ class ProductView(View):
 
         return JsonResponse({'results': results}, status=200)
     
-class CategoryImageView(View):
-    def get(self, request):
-        results = [{
-                'id'   : category.id,
-                'name' : category.name,
-                'image': category.image
-            } for category in Category.objects.all()]
+class ReviewView(View):
+    # @login_decorator
+    def post(self, request, product_id):
+        try:
+            signed_user = request.user
+            data        = json.loads(request.body)
+            product     = Product.objects.filter(id=product_id)
+
+            if not product.exists():
+                return JsonResponse({'message': 'PRODUCT_NOT_FOUND'}, status=404)
+
+            Review.objects.create(
+                user      = signed_user,
+                product   = product,
+                image_url = data['imageUrl'],
+                title     = data['title'],
+                content   = data['content']
+            )
+
+            product.reviews += 1
+            product.save()
+
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
-        return JsonResponse({'results': results}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'ACCESS_DENIED'}, status=400)
