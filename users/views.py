@@ -77,7 +77,7 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
 class UserView(View):
-    # @login_decorator
+    @login_decorator
     def get(self,request):
         try: 
             user    = request.user
@@ -89,7 +89,24 @@ class UserView(View):
                     "orderCount"   : user.order_set.all().count(),
                     }
 
-            return JsonResponse({"results": results} , status=200)
+            view = request.GET.get('view', "order")
+            orders = user.order_set.all()
+
+            if view == 'order':
+                views =  [{
+                        "orderNumber"  : order.id,
+                        "orderSummary" : order.orderitem_set.first().product_option.product.name,
+                        "totalAmount"  : order.orderitem_set.count(),
+                        "totalPrice"   : order.total_price,
+                        "deliveryDate" : order.delivery_date,} for order in orders]
+
+            if view == 'coupon':
+                coupons = user.coupons.all()
+                views = [{"coupon" :coupon.name} for coupon in coupons] 
+
+            results['view'] = views
+
+            return JsonResponse( {"result": results} , status = 201)
 
         except KeyError:
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
