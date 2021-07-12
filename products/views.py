@@ -50,9 +50,6 @@ class ListingView(View):
             if request.GET.get('sort', ''):
                 products = products.order_by(sort[request.GET.get('sort', '')])
 
-            if request.GET.get('best-items', '') == 'true':
-                products = products.order_by(sort['sales'])[:6]
-
         except KeyError:
             products = products
 
