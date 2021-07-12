@@ -106,7 +106,7 @@ class UserView(View):
 
             results['view'] = views
 
-            return JsonResponse( {"result": results} , status = 201)
+            return JsonResponse( {"result": results} , status = 200)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 400)
