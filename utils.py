@@ -18,3 +18,4 @@ def login_decorator(func):
             
         return func(self, requst, *args, **kwargs)
     return wrapper
+    
