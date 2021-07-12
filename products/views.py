@@ -1,6 +1,6 @@
 from django.views                import View
 from django.http.response        import JsonResponse
-from django.utils.datastructures import MultiValueDictKeyError
+from django.db.models            import Q
 
 from products.models             import Category, Product
 
@@ -29,47 +29,49 @@ class ProductView(View):
 
         return JsonResponse({'results': results}, status=200)
 
-class ListingView(View):
+class ProductsView(View):
     def get(self, request):
-
         sort = {
-            'sales': '-sales',
-            'reviews': '-reviews',
+            'sales'     : '-sales',
+            'reviews'   : '-reviews',
             'price-desc': '-price',
-            'price-asc': 'price'
+            'price-asc' : 'price'
         }
         
         try:
-            category = Category.objects.get(name=request.GET.get('category', ''))
-            products = Product.objects.filter(category=category.id)
-        
-            if request.GET['category'] == 'all':
+            category = Category.objects.filter(Q(name=request.GET.get('category', '')))
+
+            if category:
+                products = Product.objects.filter(Q(category=category[0].id))
+            else:
+                products = Product.objects.all()
+
+            if request.GET.get('category', '') == 'all':
                 category = Category.objects.get(name='all')
                 products = Product.objects.all()
- 
+
             if request.GET.get('sort', ''):
                 products = products.order_by(sort[request.GET.get('sort', '')])
 
+            results = {
+                'category_image': category[0].image if category else Category.objects.get(name='all').image,
+                'items': [
+                    {
+                    'id'       : product.id,
+                    'name'     : product.name, 
+                    'price'    : int(product.price),
+                    'grams'    : int(product.grams),
+                    'thumbnail': product.thumbnail,
+                    'isOrganic': product.is_organic,
+                    'sales'    : product.sales,
+                    'reviews'  : product.reviews,
+                    'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()]
+                    } for product in products]
+                }
+
+            return JsonResponse({'results': results}, status=200)
+
         except KeyError:
-            products = products
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-        except Category.DoesNotExist:
-            return JsonResponse({'message': 'CATEGORY_DOES_NOT_EXIST'}, status=400)
 
-        results = {
-            'category_image': category.image,
-            'items': [
-                {
-                'id'       : product.id,
-                'name'     : product.name, 
-                'price'    : int(product.price),
-                'grams'    : int(product.grams),
-                'thumbnail': product.thumbnail,
-                'isOrganic': product.is_organic,
-                'sales'    : product.sales,
-                'reviews'  : product.reviews,
-                'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()]
-                } for product in products]
-            }
-
-        return JsonResponse({'results': results}, status=200)
