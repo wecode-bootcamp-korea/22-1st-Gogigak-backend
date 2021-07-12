@@ -1,6 +1,5 @@
 from django.views                import View
 from django.http.response        import JsonResponse
-from django.db.models            import Q
 
 from products.models             import Category, Product
 
@@ -39,10 +38,10 @@ class ProductsView(View):
         }
         
         try:
-            category = Category.objects.filter(Q(name=request.GET.get('category', '')))
+            category = Category.objects.filter(name=request.GET.get('category', ''))
 
             if category:
-                products = Product.objects.filter(Q(category=category[0].id))
+                products = Product.objects.filter(category=category[0].id)
             else:
                 products = Product.objects.all()
 
