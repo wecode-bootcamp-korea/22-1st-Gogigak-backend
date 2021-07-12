@@ -1,7 +1,8 @@
+from django.views         import View
 from django.http.response import JsonResponse
-from django.views import View
 
-from products.models import Category, Product
+from users.models         import User
+from products.models      import Category, Product, Review
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -37,3 +38,26 @@ class CategoryImageView(View):
             } for category in Category.objects.all()]
         
         return JsonResponse({'results': results}, status=200)
+
+class ReviewView(View):
+    # @login_decorator
+    def delete(self, request, review_id):
+        try:
+            signed_user = request.user
+            review      = Review.objects.get(id=review_id)
+
+            if review.user == signed_user:
+                review.delete()
+                review.product.reviews -= 1
+                review.product.save()
+
+                return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
+
+            else:
+                return JsonResponse({'message': 'ACCESS_DENIED'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'ACCESS_DENIED'}, status=400)
