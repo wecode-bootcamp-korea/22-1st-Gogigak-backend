@@ -1,17 +1,11 @@
-import json
-import re
-import bcrypt
-import jwt
-from json.decoder import JSONDecodeError
-from utils import login_decorator
+import json, re, bcrypt, jwt
+from json.decoder     import JSONDecodeError
 
-from django.views import View
-from django.http  import JsonResponse
-from django.db.models import Sum
+from django.views     import View
+from django.http      import JsonResponse
 
-from users.models import Coupon, User
-from orders.models import Order
-from my_settings  import SECRET_KEY
+from users.models     import User
+from my_settings      import SECRET_KEY
 
 class SignUpView(View):
     def post(self,request):
