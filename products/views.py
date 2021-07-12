@@ -1,7 +1,7 @@
 from django.http.response import JsonResponse
 from django.views import View
 
-from products.models import Product
+from products.models import Category, Product
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -27,5 +27,13 @@ class ProductView(View):
         }
 
         return JsonResponse({'results': results}, status=200)
-            
-
+    
+class CategoryImageView(View):
+    def get(self, request):
+        results = [{
+                'id'   : category.id,
+                'name' : category.name,
+                'image': category.image
+            } for category in Category.objects.all()]
+        
+        return JsonResponse({'results': results}, status=200)
