@@ -26,7 +26,7 @@ class SignUpView(View):
             if not REGEX_PASSWORD.match(data["password"]):
                 return JsonResponse({"message" : "INVALID_PASSWORD_FORMAT"} , status = 400)
             
-            if not REGEX_PHONE_NUMBER.match(data["phone_number"]):
+            if not REGEX_PHONE_NUMBER.match(data["phoneNumber"]):
                 return JsonResponse({"message": "INVALID_PHONE_NUMBER_FORMAT"} , status = 400)
             
             if not REGEX_NAME.match(data["name"]):
@@ -35,7 +35,7 @@ class SignUpView(View):
             if User.objects.filter(email=data["email"]).exists():
                 return JsonResponse( {"message": "EMAIL_EXISTS"} , status = 400)
 
-            if User.objects.filter(phone_number=data["phone_number"]).exists():
+            if User.objects.filter(phone_number=data["phoneNumber"]).exists():
                 return JsonResponse( {"message": "PHONE_NUMBER_EXISTS"} , status = 400)
 
             hashed_password = bcrypt.hashpw(data["password"].encode("utf-8"),bcrypt.gensalt())
@@ -44,8 +44,9 @@ class SignUpView(View):
                 email        = data["email"],
                 password     = hashed_password.decode("utf-8"),
                 name         = data["name"],
-                phone_number = data["phone_number"],
-                address      = data["address"]
+                phone_number = data["phoneNumber"],
+                address      = data["address"],
+                zip_code     = data['zipCode']
                 )
             return JsonResponse( {"message": "SUCCESS"} , status = 201)
         
