@@ -30,15 +30,10 @@ class ProductView(View):
     
 class CategoryImageView(View):
     def get(self, request):
-        categories = Category.objects.all()
-        results = []
-        
-        results.append(
-            {
+        results = [{
                 'id'   : category.id,
                 'name' : category.name,
                 'image': category.image
-            } for category in categories
-        )
+            } for category in Category.objects.all()]
         
         return JsonResponse({'results': results}, status=200)
