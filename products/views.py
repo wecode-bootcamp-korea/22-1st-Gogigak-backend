@@ -4,7 +4,11 @@ from django.views         import View
 from django.http.response import JsonResponse
 from django.db.models     import Q
 
+<<<<<<< HEAD
 from products.models      import Category, Product
+=======
+from products.models import Category, Product
+>>>>>>> main
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -30,6 +34,7 @@ class ProductView(View):
         }
 
         return JsonResponse({'results': results}, status=200)
+<<<<<<< HEAD
 
 class ProductsView(View):
     def get(self, request):
@@ -82,3 +87,15 @@ class ProductsView(View):
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
 
+=======
+    
+class CategoryImageView(View):
+    def get(self, request):
+        results = [{
+                'id'   : category.id,
+                'name' : category.name,
+                'image': category.image
+            } for category in Category.objects.all()]
+        
+        return JsonResponse({'results': results}, status=200)
+>>>>>>> main
