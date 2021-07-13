@@ -96,6 +96,7 @@ class CartView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=200)
             
+    @login_decorator
     def patch(self, request, cart_item):
         try:
             data          = json.loads(request.body)
