@@ -8,7 +8,7 @@ from products.models import Product, Option, ProductOption
 from orders.models   import CartItem
 
 class CartView(View):
-    # @login_decorator
+    @login_decorator
     def get(self, request):
         try:
             signed_user = request.user
@@ -72,6 +72,52 @@ class CartView(View):
                 
             cart_item.save()
             return JsonResponse({'message':'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+    @login_decorator
+    def delete(self, request, cart_item):
+        try:
+            signed_user = request.user
+
+            if cart_item == 0:
+                items = CartItem.objects.filter(user=signed_user)
+                items.delete()
+                return JsonResponse({'message':'DELETE_SUCCESS'}, status=204)
+
+            if not CartItem.objects.filter(pk=cart_item, user=signed_user).exists():
+                return JsonResponse({'message':'NOT_FOUND'}, status=404)
+
+            CartItem.objects.get(pk=cart_item, user=signed_user).delete()
+            return JsonResponse({'message':'DELETE_SUCCESS'}, status=204)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=200)
+            
+    @login_decorator
+    def patch(self, request, cart_item):
+        try:
+            data            = json.loads(request.body)
+            signed_user     = request.user
+            change_quantity = data['changeQuantity']
+
+            if not CartItem.objects.filter(pk=cart_item, user=signed_user).exists():
+                return JsonResponse({'message':'NOT_FOUND'}, status=404)
+
+            item           = CartItem.objects.get(pk=cart_item)
+            product        = item.product_options.product
+            total_quantity = item.quantity + change_quantity
+
+            if total_quantity < 1:
+                total_quantity = 1
+
+            if total_quantity > product.stock:
+                return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
+
+            item.quantity = total_quantity
+            item.save()
+            return JsonResponse({'message':'SUCCESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
