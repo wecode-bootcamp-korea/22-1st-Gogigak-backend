@@ -79,15 +79,33 @@ class UserView(View):
     def get(self,request):
         try: 
             user    = request.user
-            results = {
-                    "name"         : user.name,
-                    "point"        : user.point,
-                    "coupon"       : user.coupons.all().count(),
-                    "userNumber"   : user.id,
-                    "orderCount"   : user.order_set.all().count(),
-                    }
+            orders  = user.order_set.all()
+            coupons = user.coupons.all()
 
-            return JsonResponse({"results": results} , status=200)
+            results = {
+                "name"       : user.name,
+                "point"      : user.point,
+                "coupon"     : user.coupons.all().count(),
+                "userNumber" : user.id,
+                "orderCount" : user.order_set.all().count(),
+                "view"       : [
+                    {
+                        "orderNumber"  : order.id,
+                        "orderSummary" : order.orderitem_set.first().product_option.product.name,
+                        "totalAmount"  : order.orderitem_set.count(),
+                        "totalPrice"   : order.total_price,
+                        "deliveryDate" : order.delivery_date,
+                    } for order in orders
+                ],
+                "coupons" : [
+                    {   
+                        "id"          : coupon.id,
+                        "name"        : coupon.name,
+                        "couponValue" : coupon.value,
+                    } for coupon in coupons 
+                ] 
+            }
+            return JsonResponse( {"result": results} , status = 200)
 
         except KeyError:
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
