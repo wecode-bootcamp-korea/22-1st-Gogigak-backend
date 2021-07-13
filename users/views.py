@@ -91,18 +91,17 @@ class UserView(View):
 
             view = request.GET.get('view', "order")
             orders = user.order_set.all()
-
+            coupons = user.coupons.all()
+            
             if view == 'order':
                 views =  [{
                         "orderNumber"  : order.id,
                         "orderSummary" : order.orderitem_set.first().product_option.product.name,
                         "totalAmount"  : order.orderitem_set.count(),
                         "totalPrice"   : order.total_price,
-                        "deliveryDate" : order.delivery_date,} for order in orders]
-
-            if view == 'coupon':
-                coupons = user.coupons.all()
-                views = [{"coupon" :coupon.name} for coupon in coupons] 
+                        "deliveryDate" : order.delivery_date,
+                        "coupons"      : [coupon.name for coupon in coupons]}  for order in orders
+                        ]
 
             results['view'] = views
 
