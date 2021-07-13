@@ -1,7 +1,10 @@
-from django.views                import View
-from django.http.response        import JsonResponse
 
-from products.models             import Category, Product
+
+from django.views         import View
+from django.http.response import JsonResponse
+from django.db.models     import Q
+
+from products.models      import Category, Product
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -30,24 +33,29 @@ class ProductView(View):
 
 class ProductsView(View):
     def get(self, request):
-        sort = {
-            'sales'     : '-sales',
-            'reviews'   : '-reviews',
-            'price-desc': '-price',
-            'price-asc' : 'price'
-        }
-        
         try:
             category = Category.objects.filter(name=request.GET.get('category', ''))
 
-            if category:
-                products = Product.objects.filter(category=category[0].id)
-            else:
-                products = Product.objects.all()
+            q = Q()
+            q.add(Q(category=category.first()), q.AND)
+
+            products = Product.objects.filter(q)
+
+            # if category.exists():
+            #     products = Product.objects.filter(category=category[0].id)
+            # else:
+            #     products = Product.objects.all()
 
             if request.GET.get('category', '') == 'all':
                 category = Category.objects.get(name='all')
                 products = Product.objects.all()
+
+            sort = {
+                'sales'     : '-sales',
+                'reviews'   : '-reviews',
+                'price-desc': '-price',
+                'price-asc' : 'price'
+            }
 
             if request.GET.get('sort', ''):
                 products = products.order_by(sort[request.GET.get('sort', '')])
