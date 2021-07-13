@@ -134,7 +134,6 @@ class PurchaseView(View):
             total_quantity = 0
             total_price    = 0
             coupon_id      = data.get('couponId', None)
-            point          = data.get('point', 0)
 
             if not cart_items:
                 return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
@@ -173,7 +172,7 @@ class PurchaseView(View):
                 delivery_fee  = delivery_fee,
                 status_id     = 1,
                 total_price   = total_price,
-                point         = point
+                point         = 0
                 )
 
             OrderItem.objects.bulk_create(
