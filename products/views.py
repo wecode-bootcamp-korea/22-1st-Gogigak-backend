@@ -1,7 +1,12 @@
-from django.http.response import JsonResponse
-from django.views import View
+import jwt
 
-from products.models import Category, Product
+from django.views         import View
+from django.http.response import JsonResponse
+
+from users.models         import User
+from products.models      import Category, Product, Review
+from orders.models        import Order
+from my_settings          import SECRET_KEY
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -37,3 +42,32 @@ class CategoryImageView(View):
             } for category in Category.objects.all()]
         
         return JsonResponse({'results': results}, status=200)
+
+class ReviewView(View):
+    def get(self, request, product_id):
+        try:
+            # 로그인이 됐을 때
+            token        = request.headers.get("Authorization", None)
+            payload      = jwt.decode(token, SECRET_KEY, algorithms="HS256")
+            request.user = User.objects.get(id = payload.get('user_id', None))
+            signed_user  = request.user
+
+        except jwt.exceptions.DecodeError:
+            signed_user = ''
+
+        product     = Product.objects.get(id=product_id)
+        reviews     = Review.objects.filter(product=product)
+ 
+        results = [{
+            'id'            : review.id,
+            'user'          : review.user.id,
+            'purchaseCount' : Order.objects.filter(user=review.user).count(),
+            'title'         : review.title,
+            'content'       : review.content,
+            'image'         : review.image_url,
+            'createdAt'     : review.created_at,
+            'myReview'      : True if signed_user and review.user == signed_user else False
+        } for review in reviews]
+        
+        return JsonResponse({'results': results}, status=200)
+    
