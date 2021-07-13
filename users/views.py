@@ -77,7 +77,7 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
 class UserView(View):
-    # @login_decorator
+    @login_decorator
     def get(self,request):
         try: 
             user    = request.user
@@ -98,14 +98,11 @@ class UserView(View):
 class DeliveryView(View):
     def post(self,request):
         try:
-            data    = json.loads(request.body)
-            address = Address.objects.filter(zip_code = data["zipCode"])
+            data         = json.loads(request.body)
+            is_available = Address.objects.filter(zip_code = data["zipCode"]).exists()
 
-            if address and (int("00001") <= int(address[0].zip_code) <= int("09999")):
-                return JsonResponse({'message': True}, status = 201)
-            
-            return JsonResponse({'message': False}, status = 200)
-        
+            return JsonResponse({'message': is_available }, status = 201)
+
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
         
