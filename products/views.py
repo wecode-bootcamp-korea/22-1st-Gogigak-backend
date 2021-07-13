@@ -4,11 +4,17 @@ from django.views         import View
 from django.http.response import JsonResponse
 from django.db.models     import Q
 
-<<<<<<< HEAD
 from products.models      import Category, Product
-=======
-from products.models import Category, Product
->>>>>>> main
+
+class CategoryImageView(View):
+    def get(self, request):
+        results = [{
+                'id'   : category.id,
+                'name' : category.name,
+                'image': category.image
+            } for category in Category.objects.all()]
+        
+        return JsonResponse({'results': results}, status=200)
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -34,39 +40,34 @@ class ProductView(View):
         }
 
         return JsonResponse({'results': results}, status=200)
-<<<<<<< HEAD
 
 class ProductsView(View):
     def get(self, request):
         try:
-            category = Category.objects.filter(name=request.GET.get('category', ''))
+            category = Category.objects.filter(name=request.GET.get('category', None))
+            sort     = request.GET.get('sort', '')
 
             q = Q()
-            q.add(Q(category=category.first()), q.AND)
+
+            if category:
+                q.add(Q(category=category.first()), q.AND)
 
             products = Product.objects.filter(q)
-
-            # if category.exists():
-            #     products = Product.objects.filter(category=category[0].id)
-            # else:
-            #     products = Product.objects.all()
-
+ 
             if request.GET.get('category', '') == 'all':
-                category = Category.objects.get(name='all')
+                category = Category.objects.filter(name='all')
                 products = Product.objects.all()
 
-            sort = {
+            sort_dict = {
+                'id'        : 'id',
                 'sales'     : '-sales',
                 'reviews'   : '-reviews',
                 'price-desc': '-price',
                 'price-asc' : 'price'
             }
-
-            if request.GET.get('sort', ''):
-                products = products.order_by(sort[request.GET.get('sort', '')])
-
+            
             results = {
-                'category_image': category[0].image if category else Category.objects.get(name='all').image,
+                'category_image': category.first().image if category else Category.objects.get(name='all').image,
                 'items': [
                     {
                     'id'       : product.id,
@@ -78,24 +79,10 @@ class ProductsView(View):
                     'sales'    : product.sales,
                     'reviews'  : product.reviews,
                     'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()]
-                    } for product in products]
+                    } for product in products.order_by(sort_dict.get(sort, 'id'))]
                 }
 
             return JsonResponse({'results': results}, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-
-=======
-    
-class CategoryImageView(View):
-    def get(self, request):
-        results = [{
-                'id'   : category.id,
-                'name' : category.name,
-                'image': category.image
-            } for category in Category.objects.all()]
-        
-        return JsonResponse({'results': results}, status=200)
->>>>>>> main
