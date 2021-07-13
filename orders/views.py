@@ -8,7 +8,7 @@ from products.models import Product, Option, ProductOption
 from orders.models   import CartItem
 
 class CartView(View):
-    # @login_decorator
+    @login_decorator
     def get(self, request):
         try:
             signed_user = request.user

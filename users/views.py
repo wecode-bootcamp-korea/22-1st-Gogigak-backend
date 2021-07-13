@@ -6,6 +6,7 @@ from django.http  import JsonResponse
 
 from users.models import User
 from my_settings  import SECRET_KEY
+from utils        import login_decorator
 
 class SignUpView(View):
     def post(self,request):
@@ -74,7 +75,7 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
 class UserView(View):
-    # @login_decorator
+    @login_decorator
     def get(self,request):
         try: 
             user    = request.user
