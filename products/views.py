@@ -3,6 +3,7 @@ import json
 from django.views         import View
 from django.http.response import JsonResponse
 
+from utils                import login_decorator
 from users.models         import User
 from products.models      import Category, Product, Review
 
@@ -42,7 +43,7 @@ class ProductView(View):
         return JsonResponse({'results': results}, status=200)
     
 class ReviewView(View):
-    # @login_decorator
+    @login_decorator
     def post(self, request, product_id):
         try:
             signed_user = request.user
