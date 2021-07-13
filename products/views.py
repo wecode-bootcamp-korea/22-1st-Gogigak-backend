@@ -76,7 +76,8 @@ class ProductsView(View):
                     'isOrganic': product.is_organic,
                     'sales'    : product.sales,
                     'reviews'  : product.reviews,
-                    'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()]
+                    'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()],
+                    'stock'    : product.stock
                     } for product in products.order_by(sort_dict.get(sort, 'id'))]
                 }
 
