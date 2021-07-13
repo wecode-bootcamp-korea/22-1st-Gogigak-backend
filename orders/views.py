@@ -6,6 +6,7 @@ from django.http.response import JsonResponse
 from django.utils         import timezone
 from django.db            import transaction
 
+from utils           import login_decorator
 from users.models    import User, UserCoupon, Coupon
 from orders.models   import CartItem, Order, OrderItem
 from products.models import Product, Option, ProductOption
@@ -35,7 +36,7 @@ class CartView(View):
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=400)
     
-    # @login_decorator
+    @login_decorator
     def post(self, request):
         try:
             data           = json.loads(request.body)
