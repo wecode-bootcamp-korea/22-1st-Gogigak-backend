@@ -104,7 +104,7 @@ class DeliveryView(View):
             if address and (int("00001") <= int(address[0].zip_code) <= int("09999")):
                 return JsonResponse({'message': True}, status = 201)
             
-            return JsonResponse({'message': False}, status = 400)
+            return JsonResponse({'message': False}, status = 200)
         
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
