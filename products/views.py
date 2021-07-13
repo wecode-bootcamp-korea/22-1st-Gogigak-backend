@@ -45,16 +45,14 @@ class CategoryImageView(View):
 
 class ReviewView(View):
     def get(self, request, product_id):
-        try:
-            # 로그인이 됐을 때
-            token        = request.headers.get("Authorization", None)
+        signed_user  = ''
+        token        = request.headers.get("Authorization", None)
+
+        if token:
             payload      = jwt.decode(token, SECRET_KEY, algorithms="HS256")
             request.user = User.objects.get(id = payload.get('user_id', None))
             signed_user  = request.user
-
-        except jwt.exceptions.DecodeError:
-            signed_user = ''
-
+        
         product     = Product.objects.get(id=product_id)
         reviews     = Review.objects.filter(product=product)
  
@@ -70,4 +68,3 @@ class ReviewView(View):
         } for review in reviews]
         
         return JsonResponse({'results': results}, status=200)
-    
