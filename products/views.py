@@ -1,6 +1,7 @@
 from django.views         import View
 from django.http.response import JsonResponse
 
+from utils                import login_decorator
 from users.models         import User
 from products.models      import Category, Product, Review
 
@@ -40,7 +41,7 @@ class CategoryImageView(View):
         return JsonResponse({'results': results}, status=200)
 
 class ReviewView(View):
-    # @login_decorator
+    @login_decorator
     def delete(self, request, review_id):
         try:
             signed_user = request.user
