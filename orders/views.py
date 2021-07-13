@@ -123,7 +123,7 @@ class CartView(View):
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
-            
+
 class PurchaseView(View):
     @login_decorator
     def post(self, request):
@@ -134,7 +134,7 @@ class PurchaseView(View):
             total_quantity = 0
             total_price    = 0
             coupon_id      = data.get('couponId', None)
-            point          = data.get('pointId', 0)
+            point          = data.get('point', 0)
 
             if not cart_items:
                 return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
