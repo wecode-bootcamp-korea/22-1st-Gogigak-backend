@@ -4,6 +4,7 @@ from json.decoder import JSONDecodeError
 from django.views         import View
 from django.http.response import JsonResponse
 from django.utils         import timezone
+from django.db            import transaction
 
 from users.models    import User, UserCoupon, Coupon
 from orders.models   import CartItem, Order, OrderItem
@@ -126,6 +127,7 @@ class CartView(View):
 
 class PurchaseView(View):
     @login_decorator
+    @transaction.atomic
     def post(self, request):
         try:
             data           = json.loads(request.body)
