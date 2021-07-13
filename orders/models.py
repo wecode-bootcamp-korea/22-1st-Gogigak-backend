@@ -10,15 +10,17 @@ class Order(models.Model):
     delivery_fee  = models.DecimalField(max_digits=10, decimal_places=2)
     coupon        = models.ForeignKey('users.Coupon', on_delete=models.SET_NULL, null=True)
     status        = models.ForeignKey('OrderStatus', on_delete=models.SET_NULL, null=True)
+    created_at    = models.DateField(auto_now_add=True)
+    total_price   = models.IntegerField()
 
     class Meta:
         db_table = 'orders'
 
 class OrderItem(models.Model):
-    order    = models.ForeignKey(Order, on_delete=models.CASCADE) 
-    product  = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True) 
-    quantity = models.IntegerField()
-    status   = models.ForeignKey('OrderItemStatus', on_delete=models.SET_NULL, null=True) 
+    order          = models.ForeignKey(Order, on_delete=models.CASCADE) 
+    product_option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, null=True) 
+    quantity       = models.IntegerField()
+    status         = models.ForeignKey('OrderItemStatus', on_delete=models.SET_NULL, null=True) 
 
     class Meta:
         db_table = 'order_items' 
