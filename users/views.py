@@ -81,30 +81,27 @@ class UserView(View):
     def get(self,request):
         try: 
             user    = request.user
-            results = {
-                    "name"         : user.name,
-                    "point"        : user.point,
-                    "coupon"       : user.coupons.all().count(),
-                    "userNumber"   : user.id,
-                    "orderCount"   : user.order_set.all().count(),
-                    }
 
-            view = request.GET.get('view', "order")
             orders = user.order_set.all()
             coupons = user.coupons.all()
-            
-            if view == 'order':
-                views =  [{
+
+            results = {
+                "name"       : user.name,
+                "point"      : user.point,
+                "coupon"     : user.coupons.all().count(),
+                "userNumber" : user.id,
+                "orderCount" : user.order_set.all().count(),
+                "view"       : [
+                    {
                         "orderNumber"  : order.id,
                         "orderSummary" : order.orderitem_set.first().product_option.product.name,
                         "totalAmount"  : order.orderitem_set.count(),
                         "totalPrice"   : order.total_price,
                         "deliveryDate" : order.delivery_date,
-                        "coupons"      : [coupon.name for coupon in coupons]}  for order in orders
-                        ]
-
-            results['view'] = views
-
+                        "coupons"      : [coupon.name for coupon in coupons]
+                    } for order in orders
+                ]        
+            }
             return JsonResponse( {"result": results} , status = 200)
 
         except KeyError:
