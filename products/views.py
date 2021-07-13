@@ -1,8 +1,6 @@
-
-
 from django.views         import View
-from django.http.response import JsonResponse
 from django.db.models     import Q
+from django.http.response import JsonResponse
 
 from products.models      import Category, Product
 
