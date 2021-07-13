@@ -1,11 +1,13 @@
 import json
+from json.decoder import JSONDecodeError
 
 from django.views         import View
 from django.http.response import JsonResponse
+from django.utils         import timezone
 
-from users.models    import User
+from users.models    import User, UserCoupon, Coupon
+from orders.models   import CartItem, Order, OrderItem
 from products.models import Product, Option, ProductOption
-from orders.models   import CartItem
 
 class CartView(View):
     # @login_decorator
@@ -94,3 +96,84 @@ class CartView(View):
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=200)
+
+class PurchaseView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data           = json.loads(request.body)
+            signed_user    = request.user
+            cart_items     = CartItem.objects.filter(user=signed_user)
+            total_quantity = 0
+            total_price    = 0
+            coupon_id      = data.get('couponId', None)
+            point          = data.get('pointId', 0)
+
+            if not cart_items:
+                return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
+
+            if not UserCoupon.objects.filter(id=coupon_id, user=signed_user).exists():
+                    return JsonResponse({'message':'INVALID_COUPON'}, status=400)
+            
+            for cart_item in cart_items:
+                
+                if cart_item.quantity > cart_item.product_options.product.stock:
+                    return JsonResponse({'message':f"{cart_item.name}_SOLD_OUT"}, status=400)
+                
+                total_quantity += cart_item.quantity
+                total_price    += (cart_item.quantity * cart_item.product_options.product.price)
+            
+            delivery_fee = (2500 if Order.objects.filter(user=signed_user).exists() 
+                            or total_price < 50000
+                            else 0)
+
+            if coupon_id:
+
+                if not UserCoupon.objects.filter(id=coupon_id, user=signed_user).exists():
+                    return JsonResponse({'message':'INVALID_COUPON'}, status=400)
+
+                total_price -= Coupon.objects.get(pk=coupon_id).value
+
+                total_price = 0 if total_price <= 0 else total_price
+                
+            order = Order.objects.create(
+                user          = signed_user,
+                delivery_date = timezone.localtime() + timezone.timedelta(days=2),
+                recipient     = signed_user.name,
+                phone_number  = signed_user.phone_number,
+                address       = signed_user.address,
+                coupon_id     = coupon_id,
+                delivery_fee  = delivery_fee,
+                status_id     = 1,
+                total_price   = total_price,
+                point         = point
+                )
+
+            OrderItem.objects.bulk_create(
+                [
+                    OrderItem(
+                        status_id      = 1,
+                        product_option = ProductOption.objects.get(
+                            product_id = cart_item.product_options.product.id,
+                            option_id  = cart_item.product_options.option.id
+                            ),
+                        order          = order,
+                        quantity       = cart_item.quantity
+                    ) for cart_item in cart_items
+                ]
+            )
+
+            for cart_item in cart_items:
+                cart_item.product_options.product.sales += cart_item.quantity
+                cart_item.product_options.product.stock -= cart_item.quantity
+                cart_item.product_options.product.save()
+                
+            cart_items.delete()
+
+            return JsonResponse({"message":"SUCCESS"}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        
+        except JSONDecodeError:
+            return JsonResponse({"message":"INVALID_JSON"}, status=400)
