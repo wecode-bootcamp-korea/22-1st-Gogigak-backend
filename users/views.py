@@ -1,7 +1,4 @@
-import json
-import re
-import bcrypt
-import jwt
+import json, re, bcrypt, jwt
 from json.decoder import JSONDecodeError
 
 from django.views import View
@@ -9,6 +6,7 @@ from django.http  import JsonResponse
 
 from users.models import User
 from my_settings  import SECRET_KEY
+from utils        import login_decorator
 
 class SignUpView(View):
     def post(self,request):
@@ -81,15 +79,27 @@ class UserView(View):
     def get(self,request):
         try: 
             user    = request.user
-            results = {
-                    "name"         : user.name,
-                    "point"        : user.point,
-                    "coupon"       : user.coupons.all().count(),
-                    "userNumber"   : user.id,
-                    "orderCount"   : user.order_set.all().count(),
-                    }
+            orders  = user.order_set.all()
+            coupons = user.coupons.all()
 
-            return JsonResponse({"results": results} , status=200)
+            results = {
+                "name"       : user.name,
+                "point"      : user.point,
+                "coupon"     : user.coupons.all().count(),
+                "userNumber" : user.id,
+                "orderCount" : user.order_set.all().count(),
+                "view"       : [
+                    {
+                        "orderNumber"  : order.id,
+                        "orderSummary" : order.orderitem_set.first().product_option.product.name,
+                        "totalAmount"  : order.orderitem_set.count(),
+                        "totalPrice"   : order.total_price,
+                        "deliveryDate" : order.delivery_date,
+                        "coupons"      : [coupon.name for coupon in coupons]
+                    } for order in orders
+                ]        
+            }
+            return JsonResponse( {"result": results} , status = 200)
 
         except KeyError:
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
