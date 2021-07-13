@@ -75,10 +75,11 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
 class UserView(View):
-    @login_decorator
+    # @login_decorator
     def get(self,request):
         try: 
-            user    = request.user
+            # user    = request.user
+            user  = User.objects.get(id=1)
             orders  = user.order_set.all()
             coupons = user.coupons.all()
 
@@ -95,9 +96,14 @@ class UserView(View):
                         "totalAmount"  : order.orderitem_set.count(),
                         "totalPrice"   : order.total_price,
                         "deliveryDate" : order.delivery_date,
-                        "coupons"      : [coupon.name for coupon in coupons]
                     } for order in orders
-                ]        
+                ],
+                "coupons" : [
+                    {   "id"          : coupon.id,
+                        "name"        : coupon.name,
+                        "couponValue" : coupon.value,
+                    } for coupon in coupons 
+                ] 
             }
             return JsonResponse( {"result": results} , status = 200)
 
