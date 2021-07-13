@@ -8,7 +8,7 @@ from products.models import Product, Option, ProductOption
 from orders.models   import CartItem
 
 class CartView(View):
-    @login_decorator
+    # @login_decorator
     def get(self, request):
         try:
             signed_user = request.user
@@ -76,7 +76,7 @@ class CartView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-    @login_decorator
+    # @login_decorator
     def delete(self, request, cart_item):
         try:
             signed_user = request.user
@@ -95,7 +95,7 @@ class CartView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=200)
             
-    @login_decorator
+    # @login_decorator
     def patch(self, request, cart_item):
         try:
             data            = json.loads(request.body)

@@ -79,8 +79,7 @@ class UserView(View):
     def get(self,request):
         try: 
             user    = request.user
-
-            orders = user.order_set.all()
+            orders  = user.order_set.all()
             coupons = user.coupons.all()
 
             results = {
