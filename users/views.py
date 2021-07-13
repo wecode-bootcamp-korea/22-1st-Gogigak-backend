@@ -78,8 +78,7 @@ class UserView(View):
     # @login_decorator
     def get(self,request):
         try: 
-            # user    = request.user
-            user  = User.objects.get(id=1)
+            user    = request.user
             orders  = user.order_set.all()
             coupons = user.coupons.all()
 
@@ -99,7 +98,8 @@ class UserView(View):
                     } for order in orders
                 ],
                 "coupons" : [
-                    {   "id"          : coupon.id,
+                    {   
+                        "id"          : coupon.id,
                         "name"        : coupon.name,
                         "couponValue" : coupon.value,
                     } for coupon in coupons 
