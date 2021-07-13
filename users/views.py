@@ -10,8 +10,6 @@ from django.http  import JsonResponse
 from users.models import User, Address
 from my_settings  import SECRET_KEY
 
-from django.core.exceptions import ObjectDoesNotExist
-
 class SignUpView(View):
     def post(self,request):
         try:
@@ -97,29 +95,19 @@ class UserView(View):
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
 
-class AddressView(View):
+class DeliveryView(View):
     def post(self,request):
-        # try:
-            data = json.loads(request.body)
+        try:
+            data    = json.loads(request.body)
+            address = Address.objects.filter(zip_code = data["zipCode"])
 
-            # Address.objects.get(zip_code="09999")
-            address = Address.objects.get(zip_code = data["zipCode"])
+            if address and (int("00001") <= int(address[0].zip_code) <= int("09999")):
+                return JsonResponse({'message': True}, status = 201)
             
-            if int("00001") <= address.id <= int("09999"):
-                return JsonResponse({'result': "배송 가능주소입니다"}, status=400)
-            return JsonResponse({'result': "배송 불 가능주소입니다"}, status=400)
-
-        # except ObjectDoesNotExist: #이 에러 처리가 필수인가,,
-        #     return JsonResponse({'result': "배송불가능주소입니다222222"}, status=400)
-
-
-
+            return JsonResponse({'message': False}, status = 400)
         
+        except KeyError: 
+            return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
         
-
-
-        # address = Address.objects.get(id=1)
-
-        # if 00001 <= address.zip_code < 000002:
-        #     return True
-
+        except JSONDecodeError:
+            return JsonResponse({"message": "JSON_DECODE_ERROR"} , status = 400)
