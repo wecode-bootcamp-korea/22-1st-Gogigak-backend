@@ -6,6 +6,7 @@ from django.db.models     import Q
 
 from users.models         import User
 from products.models      import Category, Product, Review
+from orders.models        import OrderItem
 from utils                import login_decorator
 
 class CategoryView(View):
@@ -90,27 +91,19 @@ class ReviewView(View):
     @login_decorator
     def post(self, request, product_id):
         try:
-            signed_user = request.user
+            # signed_user = request.user
+            signed_user = User.objects.get(id=5)
             data        = json.loads(request.body)
 
             if not Product.objects.filter(id=product_id).exists():
                 return JsonResponse({'message': 'PRODUCT_NOT_FOUND'}, status=404)
 
-            if Review.objects.filter(user=request.user, product_id=product_id).exists():
-                return JsonResponse({'message': 'REVIEW_ALREADY_EXISTS'}, status=400)
+            review_count = Review.objects.filter(user=signed_user, product_id=product_id).count()
+            product_order_count = OrderItem.objects.filter(order__user=signed_user).filter(product_option__product_id=product_id).count()
 
-            # orders = Order.objects.filter(user=request.user)
-            
-            # for order in orders:
-            #     order_items = order.orderitem_set.all()
-            #     for order_item in order_items:
-            #         order_item.objects.filter(product_id=product_id)
+            if review_count >= product_order_count:
+                return JsonResponse({'message': 'NOT_PURCHASED_PRODUCT'}, status=400)
 
-            # order.orderitem_set.product_option.filter(product_id=product_id)
-            # order_item = [order.orderitem_set.filter() for order in orders]
-
-            # if Review.objects.filter(user=request.user, product_id=product_id).count() < Order.objects.filter()
-             
             product = Product.objects.get(id=product_id)
 
             Review.objects.create(
@@ -128,6 +121,3 @@ class ReviewView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-        
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'ACCESS_DENIED'}, status=400)
