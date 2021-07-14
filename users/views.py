@@ -75,7 +75,7 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
 
 class UserView(View):
-    # @login_decorator
+    @login_decorator
     def get(self,request):
         try: 
             user    = request.user
