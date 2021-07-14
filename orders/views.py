@@ -99,24 +99,22 @@ class CartView(View):
     @login_decorator
     def patch(self, request, cart_item):
         try:
-            data            = json.loads(request.body)
-            signed_user     = request.user
-            change_quantity = data['changeQuantity']
+            data          = json.loads(request.body)
+            signed_user   = request.user
+            item          = CartItem.objects.get(pk=cart_item)
+            item.quantity = data['changeQuantity']
 
             if not CartItem.objects.filter(pk=cart_item, user=signed_user).exists():
                 return JsonResponse({'message':'NOT_FOUND'}, status=404)
 
-            item           = CartItem.objects.get(pk=cart_item)
-            product        = item.product_options.product
-            total_quantity = item.quantity + change_quantity
+            product = item.product_options.product
 
-            if total_quantity < 1:
-                total_quantity = 1
+            if item.quantity < 1:
+                item.quantity = 1
 
-            if total_quantity > product.stock:
+            if item.quantity > product.stock:
                 return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
 
-            item.quantity = total_quantity
             item.save()
             return JsonResponse({'message':'SUCCESS'}, status=200)
 
