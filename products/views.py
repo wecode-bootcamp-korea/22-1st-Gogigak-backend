@@ -1,9 +1,21 @@
 from django.views         import View
 from django.http.response import JsonResponse
+from django.db.models     import Q
+from django.http.response import JsonResponse
 
-from users.models         import User
 from products.models      import Category, Product, Review
+from products.models      import Category, Product
 from utils                import login_decorator
+
+class CategoryView(View):
+    def get(self, request):
+        results = [{
+                'id'   : category.id,
+                'name' : category.name,
+                'image': category.image
+            } for category in Category.objects.all()]
+        
+        return JsonResponse({'results': results}, status=200)
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -24,41 +36,70 @@ class ProductView(View):
             'pricePer100g' : price_per_100g,
             'isOrganic'    : product.is_organic,
             'thumbnail'    : product.thumbnail,
-            'options'      : [option.name for option in options],
+            'options'      : [{'id': option.id, 'name': option.name} for option in options],
             'images'       : [{'imageUrl': image.image_url, 'sequence': image.sequence} for image in images]
         }
 
         return JsonResponse({'results': results}, status=200)
-    
-class CategoryImageView(View):
+
+class ProductsView(View):
     def get(self, request):
-        results = [{
-                'id'   : category.id,
-                'name' : category.name,
-                'image': category.image
-            } for category in Category.objects.all()]
-        
-        return JsonResponse({'results': results}, status=200)
+        try:
+            sort          = request.GET.get('sort', '')
+            category_name = request.GET.get('category', None)
+            category      = None
+            
+            q = Q()
+
+            if Category.objects.filter(name=category_name).exists():
+                category = Category.objects.get(name=category_name)
+                q.add(Q(category=category), q.AND)
+
+            sort_dict = {
+                'id'        : 'id',
+                'sales'     : '-sales',
+                'reviews'   : '-reviews',
+                'price-desc': '-price',
+                'price-asc' : 'price'
+            }
+
+            results = {
+                'category_image': category.image if category else None,
+                'items': [
+                    {
+                        'id'       : product.id,
+                        'name'     : product.name, 
+                        'price'    : int(product.price),
+                        'grams'    : int(product.grams),
+                        'thumbnail': product.thumbnail,
+                        'isOrganic': product.is_organic,
+                        'sales'    : product.sales,
+                        'reviews'  : product.reviews,
+                        'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()],
+                        'stock'    : product.stock
+                    } for product in Product.objects.filter(q).order_by(sort_dict.get(sort, 'id'))]
+                }
+
+            return JsonResponse({'results': results}, status=200)
+            
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
 class ReviewView(View):
     @login_decorator
     def delete(self, request, review_id):
-        try:
-            signed_user = request.user
+        signed_user = request.user
 
-            if not Review.objects.filter(id=review_id).exists():
-                return JsonResponse({'message': 'REVIEW_NOT_FOUND'}, status=404)
+        if not Review.objects.filter(id=review_id).exists():
+            return JsonResponse({'message': 'REVIEW_NOT_FOUND'}, status=404)
 
-            review      = Review.objects.get(id=review_id)
+        review = Review.objects.get(id=review_id)
 
-            if review.user != signed_user:
-                return JsonResponse({'message': 'ACCESS_DENIED'}, status=401)
+        if review.user != signed_user:
+            return JsonResponse({'message': 'ACCESS_DENIED'}, status=401)
 
-            review.delete()
-            review.product.reviews -= 1
-            review.product.save()
+        review.delete()
+        review.product.reviews -= 1
+        review.product.save()
 
-            return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
-
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
