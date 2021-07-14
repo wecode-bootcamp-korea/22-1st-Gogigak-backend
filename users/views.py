@@ -114,9 +114,9 @@ class DeliveryView(View):
     def post(self,request):
         try:
             data         = json.loads(request.body)
-            is_available = Address.objects.filter(zip_code = data["zipCode"]).exists()
+            isAvailable = Address.objects.filter(zip_code = data["zipCode"]).exists()
 
-            return JsonResponse({'is_available': is_available }, status = 200)
+            return JsonResponse({'isAvailable': isAvailable }, status = 200)
 
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
