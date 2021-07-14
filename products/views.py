@@ -1,9 +1,9 @@
 from django.views         import View
 from django.http.response import JsonResponse
 
-from utils                import login_decorator
 from users.models         import User
 from products.models      import Category, Product, Review
+from utils                import login_decorator
 
 class ProductView(View):
     def get(self, request, product_id):
