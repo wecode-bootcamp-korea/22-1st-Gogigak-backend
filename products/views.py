@@ -2,6 +2,7 @@ import json
 
 from django.views         import View
 from django.http.response import JsonResponse
+from django.db.models     import Q
 
 from users.models         import User
 from products.models      import Category, Product, Review
@@ -36,12 +37,55 @@ class ProductView(View):
             'pricePer100g' : price_per_100g,
             'isOrganic'    : product.is_organic,
             'thumbnail'    : product.thumbnail,
-            'options'      : [option.name for option in options],
+            'options'      : [{'id': option.id, 'name': option.name} for option in options],
             'images'       : [{'imageUrl': image.image_url, 'sequence': image.sequence} for image in images]
         }
 
         return JsonResponse({'results': results}, status=200)
     
+class ProductsView(View):
+    def get(self, request):
+        try:
+            sort          = request.GET.get('sort', '')
+            category_name = request.GET.get('category', None)
+            category      = None
+            
+            q = Q()
+
+            if Category.objects.filter(name=category_name).exists():
+                category = Category.objects.get(name=category_name)
+                q.add(Q(category=category), q.AND)
+
+            sort_dict = {
+                'id'        : 'id',
+                'sales'     : '-sales',
+                'reviews'   : '-reviews',
+                'price-desc': '-price',
+                'price-asc' : 'price'
+            }
+
+            results = {
+                'category_image': category.image if category else None,
+                'items': [
+                    {
+                        'id'       : product.id,
+                        'name'     : product.name, 
+                        'price'    : int(product.price),
+                        'grams'    : int(product.grams),
+                        'thumbnail': product.thumbnail,
+                        'isOrganic': product.is_organic,
+                        'sales'    : product.sales,
+                        'reviews'  : product.reviews,
+                        'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()],
+                        'stock'    : product.stock
+                    } for product in Product.objects.filter(q).order_by(sort_dict.get(sort, 'id'))]
+                }
+
+            return JsonResponse({'results': results}, status=200)
+            
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
 class ReviewView(View):
     @login_decorator
     def post(self, request, product_id):
@@ -54,7 +98,19 @@ class ReviewView(View):
 
             if Review.objects.filter(user=request.user, product_id=product_id).exists():
                 return JsonResponse({'message': 'REVIEW_ALREADY_EXISTS'}, status=400)
+
+            orders = Order.objects.filter(user=request.user)
             
+            for order in orders:
+                order_items = order.orderitem_set.all()
+                for order_item in order_items:
+                    order_item.objects.filter(product_id=product_id)
+
+            order.orderitem_set.product_option.filter(product_id=product_id)
+            order_item = [order.orderitem_set.filter() for order in orders]
+
+            if Review.objects.filter(user=request.user, product_id=product_id).count() < Order.objects.filter()
+             
             product = Product.objects.get(id=product_id)
 
             Review.objects.create(

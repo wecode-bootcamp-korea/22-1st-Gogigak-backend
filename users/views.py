@@ -95,9 +95,15 @@ class UserView(View):
                         "totalAmount"  : order.orderitem_set.count(),
                         "totalPrice"   : order.total_price,
                         "deliveryDate" : order.delivery_date,
-                        "coupons"      : [coupon.name for coupon in coupons]
                     } for order in orders
-                ]        
+                ],
+                "coupons" : [
+                    {   
+                        "id"          : coupon.id,
+                        "name"        : coupon.name,
+                        "couponValue" : coupon.value,
+                    } for coupon in coupons 
+                ] 
             }
             return JsonResponse( {"result": results} , status = 200)
 
