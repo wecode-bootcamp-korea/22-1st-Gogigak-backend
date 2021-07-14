@@ -81,7 +81,7 @@ class UserView(View):
             user         = request.user
             orders       = user.order_set.all()
             coupons      = user.coupons.all()
-            is_available = Address.objects.filter( zip_code = user.zip_code).exists()
+            is_available = Address.objects.filter(zip_code = user.zip_code).exists()
 
             results = {
                 "name"       : user.name,
