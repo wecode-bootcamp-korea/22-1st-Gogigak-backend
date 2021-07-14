@@ -3,9 +3,9 @@ import json
 from django.views         import View
 from django.http.response import JsonResponse
 
-from utils                import login_decorator
 from users.models         import User
 from products.models      import Category, Product, Review
+from utils                import login_decorator
 
 class CategoryImageView(View):
     def get(self, request):
@@ -48,20 +48,22 @@ class ReviewView(View):
         try:
             signed_user = request.user
             data        = json.loads(request.body)
-            product     = Product.objects.filter(id=product_id)
 
-            if not product.exists():
+            if not Product.objects.filter(id=product_id).exists():
                 return JsonResponse({'message': 'PRODUCT_NOT_FOUND'}, status=404)
+            
+            product = Product.objects.get(id=product_id)
 
             Review.objects.create(
                 user      = signed_user,
-                product   = product[0],
+                product   = product,
                 image_url = data['imageUrl'],
                 title     = data['title'],
                 content   = data['content']
             )
 
-            product.update(reviews=product[0].reviews + 1)
+            product.reviews += 1
+            product.save()
 
             return JsonResponse({'message': 'SUCCESS'}, status=201)
 

@@ -6,9 +6,10 @@ from django.http.response import JsonResponse
 from users.models    import User
 from products.models import Product, Option, ProductOption
 from orders.models   import CartItem
+from utils           import login_decorator
 
 class CartView(View):
-    # @login_decorator
+    @login_decorator
     def get(self, request):
         try:
             signed_user = request.user
@@ -32,7 +33,7 @@ class CartView(View):
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=400)
     
-    # @login_decorator
+    @login_decorator
     def post(self, request):
         try:
             data           = json.loads(request.body)
@@ -76,7 +77,7 @@ class CartView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-    # @login_decorator
+    @login_decorator
     def delete(self, request, cart_item):
         try:
             signed_user = request.user
@@ -95,7 +96,7 @@ class CartView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=200)
             
-    # @login_decorator
+    @login_decorator
     def patch(self, request, cart_item):
         try:
             data            = json.loads(request.body)
