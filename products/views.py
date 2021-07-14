@@ -7,7 +7,7 @@ from users.models         import User
 from products.models      import Category, Product, Review
 from utils                import login_decorator
 
-class CategoryImageView(View):
+class CategoryView(View):
     def get(self, request):
         results = [{
                 'id'   : category.id,
@@ -51,6 +51,9 @@ class ReviewView(View):
 
             if not Product.objects.filter(id=product_id).exists():
                 return JsonResponse({'message': 'PRODUCT_NOT_FOUND'}, status=404)
+
+            if Review.objects.filter(user=request.user, product_id=product_id).exists():
+                return JsonResponse({'message': 'REVIEW_ALREADY_EXISTS'}, status=400)
             
             product = Product.objects.get(id=product_id)
 
