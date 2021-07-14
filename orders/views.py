@@ -157,10 +157,10 @@ class PurchaseView(View):
             total_price += delivery_fee
 
             if coupon_id:
-                if not UserCoupon.objects.filter(id=coupon_id, user=signed_user).exists():
+                if not UserCoupon.objects.filter(coupon=coupon_id, user=signed_user).exists():
                     return JsonResponse({'message':'INVALID_COUPON'}, status=400)
-                
-                UserCoupon.objects.get(coupon=coupon_id, user=signed_user).first().delete()
+                    
+                UserCoupon.objects.filter(coupon=coupon_id, user=signed_user).first().delete()
 
                 total_price -= Coupon.objects.get(pk=coupon_id).value
                 total_price = 0 if total_price <= 0 else total_price
