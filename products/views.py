@@ -1,10 +1,13 @@
 from django.views         import View
+from django.http.response import JsonResponse
 from django.db.models     import Q
 from django.http.response import JsonResponse
 
+from products.models      import Category, Product, Review
 from products.models      import Category, Product
+from utils                import login_decorator
 
-class CategoryImageView(View):
+class CategoryView(View):
     def get(self, request):
         results = [{
                 'id'   : category.id,
@@ -81,3 +84,22 @@ class ProductsView(View):
             
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+class ReviewView(View):
+    @login_decorator
+    def delete(self, request, review_id):
+        signed_user = request.user
+
+        if not Review.objects.filter(id=review_id).exists():
+            return JsonResponse({'message': 'REVIEW_NOT_FOUND'}, status=404)
+
+        review = Review.objects.get(id=review_id)
+
+        if review.user != signed_user:
+            return JsonResponse({'message': 'ACCESS_DENIED'}, status=401)
+
+        review.delete()
+        review.product.reviews -= 1
+        review.product.save()
+
+        return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
