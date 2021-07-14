@@ -8,5 +8,5 @@ urlpatterns = [
     path('orders', include('orders.urls')),
     path('products', include('products.urls')),
     path('categories', CategoryImageView.as_view()),
-    path('address', DeliveryView.as_view()),
+    path('delivery/check', DeliveryView.as_view()),
 ]
