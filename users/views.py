@@ -108,7 +108,7 @@ class UserView(View):
             return JsonResponse( {"result": results} , status = 200)
 
         except KeyError:
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
 
 class DeliveryView(View):
     def post(self,request):
@@ -116,7 +116,7 @@ class DeliveryView(View):
             data         = json.loads(request.body)
             is_available = Address.objects.filter(zip_code = data["zipCode"]).exists()
 
-            return JsonResponse({'message': is_available }, status = 201)
+            return JsonResponse({'message': is_available }, status = 200)
 
         except KeyError: 
             return JsonResponse({"message" : "KEY_ERROR"} , status = 400)
