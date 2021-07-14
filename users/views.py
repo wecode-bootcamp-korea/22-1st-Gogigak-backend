@@ -4,7 +4,7 @@ from json.decoder import JSONDecodeError
 from django.views import View
 from django.http  import JsonResponse
 
-from users.models import User
+from users.models import User, Coupon, UserCoupon
 from my_settings  import SECRET_KEY
 from utils        import login_decorator
 
@@ -38,14 +38,20 @@ class SignUpView(View):
 
             hashed_password = bcrypt.hashpw(data["password"].encode("utf-8"),bcrypt.gensalt())
             
-            User.objects.create(
+            user = User.objects.create(
                 email        = data["email"],
                 password     = hashed_password.decode("utf-8"),
                 name         = data["name"],
                 phone_number = data["phoneNumber"],
                 address      = data["address"],
-                zip_code     = data['zipCode']
+                zip_code     = data['zipCode'],
                 )
+                
+            UserCoupon.objects.create(
+                coupon = Coupon.objects.get(id=Coupon.SIGNUP),
+                user   = user
+            )
+
             return JsonResponse( {"message": "SUCCESS"} , status = 201)
         
         except KeyError:
