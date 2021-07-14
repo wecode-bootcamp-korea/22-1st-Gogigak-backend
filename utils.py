@@ -22,6 +22,6 @@ def login_decorator(func):
             return JsonResponse({"message": "EXPIRED_TOKEN"}, status = 400)
 
         except User.DoesNotExist:
-            return JsonResponse({'message' : 'INVALID_USER'}, status = 400)
+            return JsonResponse({'message' : 'INVALID_USER'}, status = 401)
 
     return wrapper
