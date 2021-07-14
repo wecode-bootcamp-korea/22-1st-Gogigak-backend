@@ -1,10 +1,10 @@
 from django.urls     import path, include
 
-from products.views  import CategoryImageView
+from products.views  import CategoryView
 
 urlpatterns = [
     path('users', include('users.urls')),
     path('orders', include('orders.urls')),
     path('products', include('products.urls')),
-    path('categories', CategoryImageView.as_view()),
+    path('categories', CategoryView.as_view()),
 ]
