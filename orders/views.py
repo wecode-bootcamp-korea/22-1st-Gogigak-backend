@@ -28,8 +28,7 @@ class CartView(View):
                     'quantity'  : item.quantity
                     } for item in items
             ]
-            is_first = not Order.objects.filter(user=signed_user).exists()
-            return JsonResponse({'isFirst': is_first,'cartItems':cart_lists}, status=200)
+            return JsonResponse({'cartItems':cart_lists}, status=200)
         
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
