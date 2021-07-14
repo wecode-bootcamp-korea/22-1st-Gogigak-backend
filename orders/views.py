@@ -3,10 +3,10 @@ import json
 from django.views         import View
 from django.http.response import JsonResponse
 
-from utils           import login_decorator
 from users.models    import User
 from products.models import Product, Option, ProductOption
 from orders.models   import CartItem, Order
+from utils           import login_decorator
 
 class CartView(View):
     @login_decorator

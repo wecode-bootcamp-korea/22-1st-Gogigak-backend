@@ -7,6 +7,7 @@ from django.db.models     import Q
 from users.models         import User
 from products.models      import Category, Product, Review
 from orders.models        import OrderItem
+
 from utils                import login_decorator
 
 class CategoryView(View):
@@ -117,3 +118,20 @@ class ReviewView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            
+    def delete(self, request, review_id):
+        signed_user = request.user
+
+        if not Review.objects.filter(id=review_id).exists():
+            return JsonResponse({'message': 'REVIEW_NOT_FOUND'}, status=404)
+
+        review = Review.objects.get(id=review_id)
+
+        if review.user != signed_user:
+            return JsonResponse({'message': 'ACCESS_DENIED'}, status=401)
+
+        review.delete()
+        review.product.reviews -= 1
+        review.product.save()
+
+        return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
