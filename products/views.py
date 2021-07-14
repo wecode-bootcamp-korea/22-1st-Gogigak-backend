@@ -99,17 +99,17 @@ class ReviewView(View):
             if Review.objects.filter(user=request.user, product_id=product_id).exists():
                 return JsonResponse({'message': 'REVIEW_ALREADY_EXISTS'}, status=400)
 
-            orders = Order.objects.filter(user=request.user)
+            # orders = Order.objects.filter(user=request.user)
             
-            for order in orders:
-                order_items = order.orderitem_set.all()
-                for order_item in order_items:
-                    order_item.objects.filter(product_id=product_id)
+            # for order in orders:
+            #     order_items = order.orderitem_set.all()
+            #     for order_item in order_items:
+            #         order_item.objects.filter(product_id=product_id)
 
-            order.orderitem_set.product_option.filter(product_id=product_id)
-            order_item = [order.orderitem_set.filter() for order in orders]
+            # order.orderitem_set.product_option.filter(product_id=product_id)
+            # order_item = [order.orderitem_set.filter() for order in orders]
 
-            if Review.objects.filter(user=request.user, product_id=product_id).count() < Order.objects.filter()
+            # if Review.objects.filter(user=request.user, product_id=product_id).count() < Order.objects.filter()
              
             product = Product.objects.get(id=product_id)
 
