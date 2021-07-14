@@ -39,22 +39,68 @@ class ProductView(View):
 
         return JsonResponse({'results': results}, status=200)
 
+# class ProductsView(View):
+#     def get(self, request):
+#         try:
+#             category = Category.objects.filter(name=request.GET.get('category', None))
+#             sort     = request.GET.get('sort', '')
+
+#             q = Q()
+
+#             if category:
+#                 q.add(Q(category=category.first()), q.AND)
+
+#             products = Product.objects.filter(q)
+ 
+#             if request.GET.get('category', '') == 'all':
+#                 category = Category.objects.filter(name='all')
+#                 products = Product.objects.all()
+
+#             sort_dict = {
+#                 'id'        : 'id',
+#                 'sales'     : '-sales',
+#                 'reviews'   : '-reviews',
+#                 'price-desc': '-price',
+#                 'price-asc' : 'price'
+#             }
+            
+#             results = {
+#                 'category_image': category.first().image if category else Category.objects.get(name='all').image,
+#                 'items': [
+#                     {
+#                     'id'       : product.id,
+#                     'name'     : product.name, 
+#                     'price'    : int(product.price),
+#                     'grams'    : int(product.grams),
+#                     'thumbnail': product.thumbnail,
+#                     'isOrganic': product.is_organic,
+#                     'sales'    : product.sales,
+#                     'reviews'  : product.reviews,
+#                     'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()],
+#                     'stock'    : product.stock
+#                     } for product in products.order_by(sort_dict.get(sort, 'id'))]
+#                 }
+
+#             return JsonResponse({'results': results}, status=200)
+
+#         except KeyError:
+#             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
 class ProductsView(View):
     def get(self, request):
         try:
-            category = Category.objects.filter(name=request.GET.get('category', None))
-            sort     = request.GET.get('sort', '')
+            sort          = request.GET.get('sort', '')
+            category_name = Category.objects.filter(name=request.GET.get('category', None)).exists()
 
             q = Q()
 
-            if category:
-                q.add(Q(category=category.first()), q.AND)
+            if category_name:
+                category = Category.objects.get(name=request.GET.get('category', None))
+                q.add(Q(category=category), q.AND)
 
-            products = Product.objects.filter(q)
- 
-            if request.GET.get('category', '') == 'all':
-                category = Category.objects.filter(name='all')
-                products = Product.objects.all()
+            # if request.GET.get('category', '') == 'all':
+            #     category = Category.objects.filter(name='all')
+            #     products = Product.objects.all()
 
             sort_dict = {
                 'id'        : 'id',
@@ -63,25 +109,25 @@ class ProductsView(View):
                 'price-desc': '-price',
                 'price-asc' : 'price'
             }
-            
+
             results = {
-                'category_image': category.first().image if category else Category.objects.get(name='all').image,
+                'category_image': category.image if category_name else None,
                 'items': [
                     {
-                    'id'       : product.id,
-                    'name'     : product.name, 
-                    'price'    : int(product.price),
-                    'grams'    : int(product.grams),
-                    'thumbnail': product.thumbnail,
-                    'isOrganic': product.is_organic,
-                    'sales'    : product.sales,
-                    'reviews'  : product.reviews,
-                    'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()],
-                    'stock'    : product.stock
-                    } for product in products.order_by(sort_dict.get(sort, 'id'))]
+                        'id'       : product.id,
+                        'name'     : product.name, 
+                        'price'    : int(product.price),
+                        'grams'    : int(product.grams),
+                        'thumbnail': product.thumbnail,
+                        'isOrganic': product.is_organic,
+                        'sales'    : product.sales,
+                        'reviews'  : product.reviews,
+                        'options'  : [{'id': option.id, 'name': option.name} for option in product.options.all()],
+                        'stock'    : product.stock
+                    } for product in Product.objects.filter(q).order_by(sort_dict.get(sort, 'id'))]
                 }
 
             return JsonResponse({'results': results}, status=200)
-
+            
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
