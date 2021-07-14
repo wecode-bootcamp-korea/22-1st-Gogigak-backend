@@ -136,7 +136,7 @@ class PurchaseView(View):
             total_quantity     = 0
             total_price        = 0
             coupon_id          = data.get('couponId', None)
-            DELIVERY_FEE_REGEX = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
+            DELIVERY_VALUE     = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
             
 
             if not cart_items.exists():
@@ -149,9 +149,9 @@ class PurchaseView(View):
                 total_quantity += cart_item.quantity
                 total_price    += (cart_item.quantity * cart_item.product_options.product.price)
             
-            delivery_fee = (DELIVERY_FEE_REGEX['default'] if Order.objects.filter(user=signed_user).exists() 
-                            or total_price < DELIVERY_FEE_REGEX['free_shipping_over']
-                            else DELIVERY_FEE_REGEX['free'])
+            delivery_fee = (DELIVERY_VALUE['default'] if Order.objects.filter(user=signed_user).exists() 
+                            or total_price < DELIVERY_VALUE['free_shipping_over']
+                            else DELIVERY_VALUE['free'])
             total_price += delivery_fee
 
             if coupon_id:
