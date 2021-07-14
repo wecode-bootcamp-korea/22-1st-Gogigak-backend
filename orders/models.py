@@ -26,12 +26,18 @@ class OrderItem(models.Model):
         db_table = 'order_items' 
 
 class OrderStatus(models.Model):
+    PENDING   = 3
+    COMPLETED = 6
+
     status =  models.CharField(max_length=20)
 
     class Meta:
         db_table = 'order_statuses'
 
 class OrderItemStatus(models.Model):
+    COMPLETED = 1
+    SOLDOUT   = 2
+
     status =  models.CharField(max_length=20)
 
     class Meta:

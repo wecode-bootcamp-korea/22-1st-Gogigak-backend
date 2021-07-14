@@ -8,7 +8,7 @@ from django.db            import transaction
 
 from utils           import login_decorator
 from users.models    import User, UserCoupon, Coupon
-from orders.models   import CartItem, Order, OrderItem
+from orders.models   import CartItem, Order, OrderItem, OrderStatus, OrderItemStatus
 from products.models import Product, Option, ProductOption
 
 class CartView(View):
@@ -135,31 +135,29 @@ class PurchaseView(View):
             data               = json.loads(request.body)
             signed_user        = request.user
             cart_items         = CartItem.objects.filter(user=signed_user).select_related('product_options', 'product_options__product')
-            total_quantity     = 0
-            total_price        = 0
-            coupon_id          = data.get('couponId', None)
             DELIVERY_VALUE     = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
+            total_price        = 0
+            delivery_fee       = DELIVERY_VALUE['default']
+            coupon_id          = data.get('couponId', None)
             
-
             if not cart_items.exists():
                 return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
             
             for cart_item in cart_items:
                 if cart_item.quantity > cart_item.product_options.product.stock:
-                    return JsonResponse({'message':f"{cart_item.name}_SOLD_OUT"}, status=400)
+                    return JsonResponse({'message':'SOLD_OUT', 'soldOutProduct':cart_item.product}, status=400)
                 
-                total_quantity += cart_item.quantity
                 total_price    += (cart_item.quantity * cart_item.product_options.product.price)
             
-            delivery_fee = (DELIVERY_VALUE['default'] if Order.objects.filter(user=signed_user).exists() 
-                            or total_price < DELIVERY_VALUE['free_shipping_over']
-                            else DELIVERY_VALUE['free'])
-            total_price += delivery_fee
+            if not Order.objects.filter(user=signed_user).exists() or total_price > DELIVERY_VALUE['free_shipping_over']:
+                delivery_fee = DELIVERY_VALUE['free']
 
+            total_price += delivery_fee
+            
             if coupon_id:
                 if not UserCoupon.objects.filter(coupon=coupon_id, user=signed_user).exists():
                     return JsonResponse({'message':'INVALID_COUPON'}, status=400)
-                    
+
                 UserCoupon.objects.filter(coupon=coupon_id, user=signed_user).first().delete()
 
                 total_price -= Coupon.objects.get(pk=coupon_id).value
@@ -174,15 +172,15 @@ class PurchaseView(View):
                     address       = signed_user.address,
                     coupon_id     = coupon_id,
                     delivery_fee  = delivery_fee,
-                    status_id     = 1,
+                    status_id     = OrderStatus.PENDING,
                     total_price   = total_price,
                     point         = 0
-                    )
+                )
 
                 OrderItem.objects.bulk_create(
                     [
                         OrderItem(
-                            status_id      = 1,
+                            status_id      = OrderItemStatus.COMPLETED,
                             product_option = ProductOption.objects.get(
                                 product_id = cart_item.product_options.product.id,
                                 option_id  = cart_item.product_options.option.id
