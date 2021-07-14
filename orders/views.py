@@ -6,10 +6,10 @@ from django.http.response import JsonResponse
 from django.utils         import timezone
 from django.db            import transaction
 
-from utils           import login_decorator
 from users.models    import User, UserCoupon, Coupon
 from orders.models   import CartItem, Order, OrderItem, OrderStatus, OrderItemStatus
 from products.models import Product, Option, ProductOption
+from utils           import login_decorator
 
 class CartView(View):
     @login_decorator
@@ -31,15 +31,14 @@ class CartView(View):
                     'quantity'  : item.quantity
                     } for item in items
             ]
-            is_first = not Order.objects.filter(user=signed_user).exists()
-            return JsonResponse({'isFirst': is_first,'cartItems':cart_lists}, status=200)
+            return JsonResponse({'cartItems':cart_lists}, status=200)
         
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
         
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=400)
-
+    
     @login_decorator
     def post(self, request):
         try:

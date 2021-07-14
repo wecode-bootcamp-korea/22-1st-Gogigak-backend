@@ -20,6 +20,8 @@ class Address(models.Model):
         db_table = "addresses"
 
 class Coupon(models.Model):
+    SIGNUP = 3
+
     name  = models.CharField(max_length=100)
     value = models.IntegerField()
 
