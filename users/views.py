@@ -85,9 +85,10 @@ class UserView(View):
     @login_decorator
     def get(self,request):
         try: 
-            user    = request.user
-            orders  = user.order_set.all()
-            coupons = user.coupons.all()
+            user         = request.user
+            orders       = user.order_set.all()
+            coupons      = user.coupons.all()
+            is_available = Address.objects.filter(zip_code = user.zip_code).exists()
 
             results = {
                 "name"       : user.name,
@@ -95,6 +96,7 @@ class UserView(View):
                 "coupon"     : user.coupons.all().count(),
                 "userNumber" : user.id,
                 "orderCount" : user.order_set.all().count(),
+                "isAvailable": is_available,
                 "view"       : [
                     {
                         "orderNumber"  : order.id,
@@ -105,15 +107,13 @@ class UserView(View):
                     } for order in orders
                 ],
                 "coupons" : [
-                    {   
-                        "id"          : coupon.id,
+                    {   "id"          : coupon.id,
                         "name"        : coupon.name,
                         "couponValue" : coupon.value,
                     } for coupon in coupons 
                 ] 
             }
-            return JsonResponse( {"result": results} , status = 200)
-
+            return JsonResponse({"result": results} , status = 200)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 400)
 
