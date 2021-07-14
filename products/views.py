@@ -43,12 +43,13 @@ class ProductsView(View):
     def get(self, request):
         try:
             sort          = request.GET.get('sort', '')
-            category_name = Category.objects.filter(name=request.GET.get('category', None)).exists()
-
+            category_name = request.GET.get('category', None)
+            category      = None
+            
             q = Q()
 
-            if category_name:
-                category = Category.objects.get(name=request.GET.get('category', None))
+            if Category.objects.filter(name=category_name).exists():
+                category = Category.objects.get(name=category_name)
                 q.add(Q(category=category), q.AND)
 
             sort_dict = {
@@ -60,7 +61,7 @@ class ProductsView(View):
             }
 
             results = {
-                'category_image': category.image if category_name else None,
+                'category_image': category.image if category else None,
                 'items': [
                     {
                         'id'       : product.id,
