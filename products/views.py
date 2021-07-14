@@ -45,20 +45,20 @@ class ReviewView(View):
     def delete(self, request, review_id):
         try:
             signed_user = request.user
+
+            if not Review.objects.filter(id=review_id).exists():
+                return JsonResponse({'message': 'REVIEW_NOT_FOUND'}, status=404)
+
             review      = Review.objects.get(id=review_id)
 
-            if review.user == signed_user:
-                review.delete()
-                review.product.reviews -= 1
-                review.product.save()
+            if review.user != signed_user:
+                return JsonResponse({'message': 'ACCESS_DENIED'}, status=401)
 
-                return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
+            review.delete()
+            review.product.reviews -= 1
+            review.product.save()
 
-            else:
-                return JsonResponse({'message': 'ACCESS_DENIED'}, status=400)
+            return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'ACCESS_DENIED'}, status=400)
