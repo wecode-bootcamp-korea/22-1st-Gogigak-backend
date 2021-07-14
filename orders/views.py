@@ -128,34 +128,33 @@ class CartView(View):
 
 class PurchaseView(View):
     @login_decorator
-    @transaction.atomic
     def post(self, request):
         try:
-            data           = json.loads(request.body)
-            signed_user    = request.user
-            cart_items     = CartItem.objects.filter(user=signed_user).select_related('product_options', 'product_options__product')
-            total_quantity = 0
-            total_price    = 0
-            coupon_id      = data.get('couponId', None)
+            data               = json.loads(request.body)
+            signed_user        = request.user
+            cart_items         = CartItem.objects.filter(user=signed_user).select_related('product_options', 'product_options__product')
+            total_quantity     = 0
+            total_price        = 0
+            coupon_id          = data.get('couponId', None)
+            DELIVERY_FEE_REGEX = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
+            
 
-            if not cart_items:
+            if not cart_items.exists():
                 return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
             
             for cart_item in cart_items:
-                
                 if cart_item.quantity > cart_item.product_options.product.stock:
                     return JsonResponse({'message':f"{cart_item.name}_SOLD_OUT"}, status=400)
                 
                 total_quantity += cart_item.quantity
                 total_price    += (cart_item.quantity * cart_item.product_options.product.price)
             
-            delivery_fee = (2500 if Order.objects.filter(user=signed_user).exists() 
-                            or total_price < 50000
-                            else 0)
+            delivery_fee = (DELIVERY_FEE_REGEX['default'] if Order.objects.filter(user=signed_user).exists() 
+                            or total_price < DELIVERY_FEE_REGEX['free_shipping_over']
+                            else DELIVERY_FEE_REGEX['free'])
             total_price += delivery_fee
 
             if coupon_id:
-
                 if not UserCoupon.objects.filter(id=coupon_id, user=signed_user).exists():
                     return JsonResponse({'message':'INVALID_COUPON'}, status=400)
                 
@@ -165,7 +164,6 @@ class PurchaseView(View):
                 total_price = 0 if total_price <= 0 else total_price
 
             with transaction.atomic():    
-                
                 order = Order.objects.create(
                     user          = signed_user,
                     delivery_date = timezone.localtime() + timezone.timedelta(days=2),
