@@ -48,7 +48,7 @@ class SignUpView(View):
                 )
                 
             UserCoupon.objects.create(
-                coupon = Coupon.objects.get(id=3),
+                coupon = Coupon.objects.get(id=Coupon.SIGNUP),
                 user   = user
             )
 
