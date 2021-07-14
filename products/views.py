@@ -91,8 +91,7 @@ class ReviewView(View):
     @login_decorator
     def post(self, request, product_id):
         try:
-            # signed_user = request.user
-            signed_user = User.objects.get(id=5)
+            signed_user = request.user
             data        = json.loads(request.body)
 
             if not Product.objects.filter(id=product_id).exists():
