@@ -22,7 +22,7 @@ class ProductView(View):
             'pricePer100g' : price_per_100g,
             'isOrganic'    : product.is_organic,
             'thumbnail'    : product.thumbnail,
-            'options'      : [option.name for option in options],
+            'options'      : [{'id': option.id, 'name': option.name} for option in options],
             'images'       : [{'imageUrl': image.image_url, 'sequence': image.sequence} for image in images]
         }
 
