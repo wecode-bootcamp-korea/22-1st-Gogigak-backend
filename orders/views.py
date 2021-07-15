@@ -5,7 +5,7 @@ from django.http.response import JsonResponse
 
 from users.models    import User
 from products.models import Product, Option, ProductOption
-from orders.models   import CartItem, Order
+from orders.models   import CartItem
 from utils           import login_decorator
 
 class CartView(View):
@@ -25,7 +25,8 @@ class CartView(View):
                     'option'    : item.product_options.option.name,
                     'price'     : item.product_options.product.price,
                     'grams'     : item.product_options.product.grams,
-                    'quantity'  : item.quantity
+                    'stock'     : item.product_options.product.stock,
+                    'quantity'  : item.quantity if item.quantity <= item.product_options.product.stock else item.product_options.product.stock
                     } for item in items
             ]
             return JsonResponse({'cartItems':cart_lists}, status=200)
@@ -112,8 +113,8 @@ class CartView(View):
 
             product = item.product_options.product
 
-            if item.quantity < 1:
-                item.quantity = 1
+            if item.quantity < 0:
+                item.quantity = 0
 
             if item.quantity > product.stock:
                 return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
