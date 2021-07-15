@@ -141,7 +141,6 @@ class ReviewView(View):
         signed_user = request.user
         
         product     = Product.objects.get(id=product_id)
-        reviews     = Review.objects.filter(product=product)
 
         results = [{
             'id'            : review.id,
@@ -151,7 +150,7 @@ class ReviewView(View):
             'content'       : review.content,
             'image'         : review.image_url,
             'createdAt'     : review.created_at,
-            'myReview'      : True if signed_user and review.user == signed_user else False
-        } for review in reviews]
+            'myReview'      : True if review.user == signed_user else False
+        } for review in Review.objects.filter(product=product)]
 
-        return JsonResponse({'results': results}, status=200)
+        return JsonResponse({'results': results}, status=200)git
