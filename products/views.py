@@ -1,4 +1,4 @@
-import jwt, json
+import json
 
 from django.views         import View
 from django.http.response import JsonResponse
@@ -6,7 +6,6 @@ from django.db.models     import Q
 
 from products.models      import Category, Product, Review
 from orders.models        import Order
-from my_settings          import SECRET_KEY
 from utils                import login_decorator, public_login_required
 
 class CategoryView(View):
