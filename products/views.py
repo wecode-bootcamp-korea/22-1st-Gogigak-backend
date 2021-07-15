@@ -139,8 +139,6 @@ class ReviewView(View):
     @public_login_required
     def get(self, request, product_id):
         signed_user = request.user
-        
-        product     = Product.objects.get(id=product_id)
 
         results = [{
             'id'            : review.id,
@@ -151,6 +149,6 @@ class ReviewView(View):
             'image'         : review.image_url,
             'createdAt'     : review.created_at,
             'myReview'      : True if review.user == signed_user else False
-        } for review in Review.objects.filter(product=product)]
+        } for review in Review.objects.filter(product_id=product_id)]
 
         return JsonResponse({'results': results}, status=200)
