@@ -149,6 +149,6 @@ class ReviewView(View):
             'image'         : review.image_url,
             'createdAt'     : review.created_at,
             'myReview'      : True if review.user == signed_user else False
-        } for review in Review.objects.filter(product_id=product_id)]
+        } for review in Review.objects.filter(product_id=product_id).order_by('-id')]
 
         return JsonResponse({'results': results}, status=200)
