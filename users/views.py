@@ -44,8 +44,6 @@ class SignUpView(View):
                 password     = hashed_password.decode("utf-8"),
                 name         = data["name"],
                 phone_number = data["phoneNumber"],
-                address      = '',
-                zip_code     = ''
                 )
                 
             UserCoupon.objects.create(
