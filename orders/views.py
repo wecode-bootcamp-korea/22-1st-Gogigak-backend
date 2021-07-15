@@ -133,7 +133,7 @@ class PurchaseView(View):
         try:
             data               = json.loads(request.body)
             signed_user        = request.user
-            cart_items         = CartItem.objects.filter(user=signed_user).select_related('product_options', 'product_options__product')
+            cart_items         = CartItem.objects.filter(user=signed_user).select_related('product_options__option', 'product_options__product')
             DELIVERY_VALUE     = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
             total_price        = 0
             delivery_fee       = DELIVERY_VALUE['default']
