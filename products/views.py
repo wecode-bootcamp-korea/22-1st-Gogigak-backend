@@ -8,7 +8,7 @@ from users.models         import User
 from products.models      import Category, Product, Review
 from orders.models        import Order
 from my_settings          import SECRET_KEY
-from utils                import login_decorator
+from utils                import login_decorator, public_login_required
 
 class CategoryView(View):
     def get(self, request):
@@ -137,18 +137,11 @@ class ReviewView(View):
 
         return JsonResponse({'message': "REVIEW_DELETED"}, status=204)
 
+    @public_login_required
     def get(self, request, product_id):
-        signed_user  = ''
-        token        = request.headers.get("Authorization", None)
-
-        if token:
-            payload      = jwt.decode(token, SECRET_KEY, algorithms="HS256")
-            request.user = User.objects.get(id = payload.get('user_id', None))
-            signed_user  = request.user
-        
+        signed_user = request.user
         product     = Product.objects.get(id=product_id)
         reviews     = Review.objects.filter(product=product)
- 
         results = [{
             'id'            : review.id,
             'user'          : review.user.id,
@@ -159,5 +152,4 @@ class ReviewView(View):
             'createdAt'     : review.created_at,
             'myReview'      : True if signed_user and review.user == signed_user else False
         } for review in reviews]
-        
         return JsonResponse({'results': results}, status=200)
