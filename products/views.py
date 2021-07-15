@@ -98,7 +98,7 @@ class ReviewView(View):
             if not Product.objects.filter(id=product_id).exists():
                 return JsonResponse({'message': 'PRODUCT_NOT_FOUND'}, status=404)
 
-            if Review.objects.filter(user=signed_user).exists():
+            if Review.objects.filter(user=signed_user, product_id=product_id).exists():
                 return JsonResponse({'message': 'REVIEW_ALREADY_EXISTS'}, status=400)
 
             product = Product.objects.get(id=product_id)
