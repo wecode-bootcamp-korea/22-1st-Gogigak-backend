@@ -1,10 +1,13 @@
+import json
+
 from django.views         import View
 from django.http.response import JsonResponse
 from django.db.models     import Q
-from django.http.response import JsonResponse
 
+from users.models         import User
 from products.models      import Category, Product, Review
-from products.models      import Category, Product
+from orders.models        import OrderItem
+
 from utils                import login_decorator
 
 class CategoryView(View):
@@ -41,7 +44,7 @@ class ProductView(View):
         }
 
         return JsonResponse({'results': results}, status=200)
-
+    
 class ProductsView(View):
     def get(self, request):
         try:
@@ -87,6 +90,35 @@ class ProductsView(View):
 
 class ReviewView(View):
     @login_decorator
+    def post(self, request, product_id):
+        try:
+            signed_user = request.user
+            data        = json.loads(request.body)
+
+            if not Product.objects.filter(id=product_id).exists():
+                return JsonResponse({'message': 'PRODUCT_NOT_FOUND'}, status=404)
+
+            if Review.objects.filter(user=signed_user, product_id=product_id).exists():
+                return JsonResponse({'message': 'REVIEW_ALREADY_EXISTS'}, status=400)
+
+            product = Product.objects.get(id=product_id)
+
+            Review.objects.create(
+                user      = signed_user,
+                product   = product,
+                image_url = data['imageUrl'],
+                title     = data['title'],
+                content   = data['content']
+            )
+
+            product.reviews += 1
+            product.save()
+
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            
     def delete(self, request, review_id):
         signed_user = request.user
 
