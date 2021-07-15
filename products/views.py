@@ -153,4 +153,4 @@ class ReviewView(View):
             'myReview'      : True if review.user == signed_user else False
         } for review in Review.objects.filter(product=product)]
 
-        return JsonResponse({'results': results}, status=200)git
+        return JsonResponse({'results': results}, status=200)
