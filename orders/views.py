@@ -9,15 +9,16 @@ from django.db            import transaction
 from users.models    import User, UserCoupon, Coupon
 from orders.models   import CartItem, Order, OrderItem, OrderStatus, OrderItemStatus
 from products.models import Product, Option, ProductOption
+from orders.models   import CartItem
 from utils           import login_decorator
 
 class CartView(View):
     @login_decorator
     def get(self, request):
         try:
-            signed_user = User.objects.get(pk=1)
+            signed_user = request.user
             items       = CartItem.objects.filter(user=signed_user).select_related(
-                'product_options',
+                'product_options__option',
                 'product_options__product'
                 )
             cart_lists  = [
@@ -28,7 +29,8 @@ class CartView(View):
                     'option'    : item.product_options.option.name,
                     'price'     : item.product_options.product.price,
                     'grams'     : item.product_options.product.grams,
-                    'quantity'  : item.quantity
+                    'stock'     : item.product_options.product.stock,
+                    'quantity'  : item.quantity if item.quantity <= item.product_options.product.stock else item.product_options.product.stock
                     } for item in items
             ]
             return JsonResponse({'cartItems':cart_lists}, status=200)
@@ -115,8 +117,8 @@ class CartView(View):
 
             product = item.product_options.product
 
-            if item.quantity < 1:
-                item.quantity = 1
+            if item.quantity < 0:
+                item.quantity = 0
 
             if item.quantity > product.stock:
                 return JsonResponse({'message':'OUT_OF_STOCK'}, status=400)
@@ -131,13 +133,14 @@ class PurchaseView(View):
     @login_decorator
     def post(self, request):
         try:
-            data           = json.loads(request.body)
-            signed_user    = request.user
-            cart_items     = CartItem.objects.filter(user=signed_user).select_related('product_options__option', 'product_options__product')
-            DELIVERY_VALUE = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
-            total_price    = 0
-            delivery_fee   = DELIVERY_VALUE['default']
-            coupon_id      = data.get('couponId', None)
+            data              = json.loads(request.body)
+            signed_user       = request.user
+            cart_items        = CartItem.objects.filter(user=signed_user).select_related('product_options__option', 'product_options__product')
+            DELIVERY_VALUE    = {'default': 2500, 'free': 0}
+            DELIVERY_STANDARD = 50000
+            total_price       = 0
+            delivery_fee      = DELIVERY_VALUE['default']
+            coupon_id         = data.get('couponId', None)
             
             if not cart_items.exists():
                 return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
@@ -148,7 +151,7 @@ class PurchaseView(View):
                 
                 total_price += (cart_item.quantity * cart_item.product_options.product.price)
             
-            if not Order.objects.filter(user=signed_user).exists() or total_price > DELIVERY_VALUE['free_shipping_over']:
+            if not Order.objects.filter(user=signed_user).exists() or total_price > DELIVERY_STANDARD:
                 delivery_fee = DELIVERY_VALUE['free']
 
             total_price += delivery_fee
