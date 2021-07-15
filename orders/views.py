@@ -131,22 +131,22 @@ class PurchaseView(View):
     @login_decorator
     def post(self, request):
         try:
-            data               = json.loads(request.body)
-            signed_user        = request.user
-            cart_items         = CartItem.objects.filter(user=signed_user).select_related('product_options__option', 'product_options__product')
-            DELIVERY_VALUE     = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
-            total_price        = 0
-            delivery_fee       = DELIVERY_VALUE['default']
-            coupon_id          = data.get('couponId', None)
+            data           = json.loads(request.body)
+            signed_user    = request.user
+            cart_items     = CartItem.objects.filter(user=signed_user).select_related('product_options__option', 'product_options__product')
+            DELIVERY_VALUE = {'default': 2500, 'free': 0, 'free_shipping_over': 50000}
+            total_price    = 0
+            delivery_fee   = DELIVERY_VALUE['default']
+            coupon_id      = data.get('couponId', None)
             
             if not cart_items.exists():
                 return JsonResponse({"message":"NO_ITEMS_IN_CART"}, status=400)
             
             for cart_item in cart_items:
                 if cart_item.quantity > cart_item.product_options.product.stock:
-                    return JsonResponse({'message':'SOLD_OUT', 'soldOutProduct':cart_item.product}, status=400)
+                    return JsonResponse({'message':'SOLD_OUT', 'soldOutProduct':cart_item.product_options.product.name}, status=400)
                 
-                total_price    += (cart_item.quantity * cart_item.product_options.product.price)
+                total_price += (cart_item.quantity * cart_item.product_options.product.price)
             
             if not Order.objects.filter(user=signed_user).exists() or total_price > DELIVERY_VALUE['free_shipping_over']:
                 delivery_fee = DELIVERY_VALUE['free']
