@@ -4,7 +4,6 @@ from django.views         import View
 from django.http.response import JsonResponse
 from django.db.models     import Q
 
-from users.models         import User
 from products.models      import Category, Product, Review
 from orders.models        import Order
 from my_settings          import SECRET_KEY
@@ -140,8 +139,10 @@ class ReviewView(View):
     @public_login_required
     def get(self, request, product_id):
         signed_user = request.user
+        
         product     = Product.objects.get(id=product_id)
         reviews     = Review.objects.filter(product=product)
+
         results = [{
             'id'            : review.id,
             'user'          : review.user.id,
@@ -152,4 +153,5 @@ class ReviewView(View):
             'createdAt'     : review.created_at,
             'myReview'      : True if signed_user and review.user == signed_user else False
         } for review in reviews]
+
         return JsonResponse({'results': results}, status=200)
