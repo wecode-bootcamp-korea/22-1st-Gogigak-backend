@@ -12,9 +12,9 @@ class CartView(View):
     @login_decorator
     def get(self, request):
         try:
-            signed_user = User.objects.get(pk=1)
+            signed_user = request.user
             items       = CartItem.objects.filter(user=signed_user).select_related(
-                'product_options',
+                'product_options__option',
                 'product_options__product'
                 )
             cart_lists  = [
