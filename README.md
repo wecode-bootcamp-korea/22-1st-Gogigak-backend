@@ -16,8 +16,9 @@
 
 ### 데모 영상
 
-<a href="#">데모영상 클릭</a>
+<a href="https://www.youtube.com/watch?v=rDNmt8StgnA">데모영상 클릭</a>
 
+<br>
 
 ## 적용 기술 및 구현 기능
 
