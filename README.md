@@ -16,7 +16,7 @@
 
 ### 데모 영상
 
-<a href="https://wecode-bootcamp.slack.com/files/U0205EECLRJ/F02833N4RNJ/22____________________________.mov"></a>
+<a href="https://wecode-bootcamp.slack.com/files/U0205EECLRJ/F02833N4RNJ/22____________________________.mov">데모영상 클릭!</a>
 
 <br>
 
@@ -31,9 +31,7 @@
 Slack / Git + GitHub / Trello, Notion를 이용해 일정관리, 현황을 관리하였습니다. 
 
 
-### 구현 기능
-
-### Backend 
+### Backend 구현 기능
 
 **<서정민>**
 - 제품 상세페이지 뷰
